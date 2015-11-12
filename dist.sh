@@ -7,6 +7,10 @@ WATCHIFY=node_modules/watchify/bin/cmd.js
 rm -rf dist/*
 mkdir -p dist dist/js dist/css
 
+./images.sh
+cp build/css/sprity.css dist/css/sprity.css
+cp -R build/images dist/images
+
 cat node_modules/react/dist/react.min.js > dist/js/vendor.js
 cat node_modules/react-dom/dist/react-dom.min.js >> dist/js/vendor.js
 cat >>dist/js/vendor.js <<EOF
@@ -40,6 +44,8 @@ end
 index = File.read('src/index.html')
 index.gsub! '<link rel=\'stylesheet\' href=\'css/app.css\'>',
   \"<link rel='stylesheet' href='#{assets.fetch('dist/css/app.css')}'>\"
+index.gsub! '<link rel=\'stylesheet\' href=\'css/sprity.css\'>',
+  \"<link rel='stylesheet' href='#{assets.fetch('dist/css/sprity.css')}'>\"
 index.gsub! '<script src=\'js/vendor.js\'></script>',
   \"<script src='#{assets.fetch('dist/js/vendor.js')}'></script>\"
 index.gsub! '<script src=\'js/app.js\'></script>',
