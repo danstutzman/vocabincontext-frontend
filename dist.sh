@@ -20,7 +20,7 @@ EOF
 #  | node_modules/uglify-js/bin/uglifyjs --compress --mangle \
 #  >> dist/js/vendor.js
 
-$BROWSERIFY -t coffeeify src/js/app.coffee -v \
+$BROWSERIFY -t coffeeify src/coffee/app.coffee -v \
   -x react -x react-dom -x underscore \
   | node_modules/uglify-js/bin/uglifyjs --compress --mangle \
   > dist/js/app.js

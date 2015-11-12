@@ -20,6 +20,6 @@ cat >>build/js/vendor.js <<EOF
 EOF
 #$BROWSERIFY -r underscore -d -v >> build/js/vendor.js
 
-$WATCHIFY -t coffeeify src/js/app.coffee -d \
+$WATCHIFY -t coffeeify src/coffee/app.coffee -d \
   -x react -x react-dom -x underscore \
   -v -o build/js/app.js
