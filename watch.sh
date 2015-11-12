@@ -4,8 +4,7 @@ cd `dirname $0`
 BROWSERIFY=node_modules/browserify/bin/cmd.js
 WATCHIFY=node_modules/watchify/bin/cmd.js
 
-mkdir -p build
-mkdir -p build/js
+mkdir -p build build/js build/css
 
 ln -sf ../src/index.html build/index.html
 
@@ -19,6 +18,8 @@ cat >>build/js/vendor.js <<EOF
   }
 EOF
 #$BROWSERIFY -r underscore -d -v >> build/js/vendor.js
+
+sass --watch src/scss:build/css &
 
 $WATCHIFY -t coffeeify src/coffee/app.coffee -d \
   -x react -x react-dom -x underscore \

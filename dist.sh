@@ -5,7 +5,7 @@ BROWSERIFY=node_modules/browserify/bin/cmd.js
 WATCHIFY=node_modules/watchify/bin/cmd.js
 
 rm -rf dist/*
-mkdir -p dist dist/js
+mkdir -p dist dist/js dist/css
 
 cat node_modules/react/dist/react.min.js > dist/js/vendor.js
 cat node_modules/react-dom/dist/react-dom.min.js >> dist/js/vendor.js
@@ -25,7 +25,10 @@ $BROWSERIFY -t coffeeify src/coffee/app.coffee -v \
   | node_modules/uglify-js/bin/uglifyjs --compress --mangle \
   > dist/js/app.js
 
+sass --sourcemap=none --update src/scss:dist/css --style compressed
+
 rm -f dist/assets.json
+node_modules/hashmark/bin/hashmark dist/css/*.css -r true -l 5 -m dist/assets.json 'dist/css/{name}.{hash}{ext}'
 node_modules/hashmark/bin/hashmark dist/js/*.js -r true -l 5 -m dist/assets.json 'dist/js/{name}.{hash}{ext}'
 
 ruby -e "
@@ -35,6 +38,8 @@ assets.each do |key, value|
   value.gsub! 'dist/', ''
 end
 index = File.read('src/index.html')
+index.gsub! '<link rel=\'stylesheet\' href=\'css/app.css\'>',
+  \"<link rel='stylesheet' href='#{assets.fetch('dist/css/app.css')}'>\"
 index.gsub! '<script src=\'js/vendor.js\'></script>',
   \"<script src='#{assets.fetch('dist/js/vendor.js')}'></script>\"
 index.gsub! '<script src=\'js/app.js\'></script>',
