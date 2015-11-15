@@ -19,8 +19,6 @@ cat >>build/js/vendor.js <<EOF
 EOF
 #$BROWSERIFY -r underscore -d -v >> build/js/vendor.js
 
-sass --watch src/scss:build/css &
-
 $WATCHIFY -t coffeeify src/coffee/app.coffee -d \
   -x react -x react-dom -x underscore \
   -v -o build/js/app.js
