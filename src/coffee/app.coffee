@@ -5,44 +5,36 @@ ReactDOM = require 'react-dom'
 Component = React.createClass
   displayName: 'Component'
   render: ->
-    { a, div } = React.DOM
+    { div, input } = React.DOM
 
-    think_times = []
-    for i in [1..9]
-      maybe_past = (if 9 - i >= @props.time then '' else 'past')
-      think_times.push div { className: "think-time #{maybe_past}", key: i }
-
-    div { className: 'screen' },
-      div { className: 'left icon sprity sprity-thought' }
-      div { className: 'left thought-english' },
-        div
-          '(you)'
-      div { style: { clear: 'both' } }
-
+    div
+      className: 'screen'
       div
-        className: 'left icon sprity sprity-speech'
-      if @props.time < 9
-        think_times
-      else
+        className: 'past-card'
+      div
+        className: 'future-card'
+      div
+        className: 'present-card'
         div
-          className: 'left speech-pinyin'
-          'nĭ'
-      div { style: { clear: 'both' } }
-
-      a
-        href: '#'
+          className: 'bent-corner'
         div
-          className: 'sprity sprity-right-arrow'
-          style:
-            position: 'absolute'
-            bottom: '200px'
-            left: '150px'
-            backgroundColor: if @props.time < 9 then 'green' else 'red'
+          className: 'time-warning'
+          if @props.responseType is 'SAY'
+            'Say aloud in :05'
+          else if @props.responseType is 'DRAW'
+            'Draw character below in :05'
+          else if @props.responseType is 'TYPE'
+            input
+              placeholder: 'Type reply here'
+          else
+            throw new Error('responseType must be SAY, DRAW, or TYPE')
+      div
+        className: 'bottom-half'
 
 time = 0
 render = ->
   target = document.getElementById('example')
-  element = React.createElement Component, time: time
+  element = React.createElement Component, time: time, responseType: 'SAY'
   ReactDOM.render element, target
 
 incrementTime = ->

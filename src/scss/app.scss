@@ -8,9 +8,10 @@ body {
 }
 .screen {
   width: 320px;
-
   height: 460px;
   border: 0px black solid;
+  position: relative;
+  background-color: #ddd;
 }
 
 .icon.left {
@@ -59,4 +60,108 @@ body {
   &.past {
     visibility: hidden;
   }
+}
+
+
+.box h3{
+  text-align:center;
+  position:relative;
+  top:80px;
+}
+.box {
+  width:70%;
+  height:200px;
+  background:#FFF;
+  margin:40px auto;
+}
+.effect3
+{
+  position: relative;
+}
+.effect3:before
+{
+  z-index: -1;
+  position: absolute;
+  content: "";
+  bottom: 15px;
+  left: 10px;
+  width: 50%;
+  top: 80%;
+  max-width:300px;
+  background: #777;
+  box-shadow: 0 15px 10px #777;
+  transform: rotate(-3deg);
+}
+
+.past-card {
+  position: absolute;
+  top: 10px;
+  width: 10px;
+  bottom: 250px;
+  z-index: 2;
+  border: 0px #ccc solid;
+  background-color: white;
+}
+.future-card {
+  position: absolute;
+  top: 10px;
+  right: 0px;
+  width: 10px;
+  bottom: 250px;
+  z-index: 2;
+  border: 0px #ccc solid;
+  background-color: white;
+}
+.present-card {
+  position: absolute;
+  bottom: 250px;
+  left: 20px;
+  right: 20px;
+  top: 10px;
+  background-color: white;
+  border: 0px #ccc solid;
+  z-index: 2;
+
+  .bent-corner {
+    position: absolute;
+    background: url("../shadows/pagecurl2.png") 0px 0px no-repeat;
+    background-size: 130px 82px;
+    bottom: 0px;
+    height: 82px;
+    width: 130px;
+  }
+  .time-warning {
+    position: absolute;
+    bottom: 12px;
+    left: 80px;
+    font-family: sans-serif;
+    color: #800;
+    font-weight: bold;
+    font-size: 18pt;
+    text-align: right;
+    line-height: 100%;
+    right: 12px;
+
+    input {
+      width: 100%;
+      font-size: 18pt;
+      background-color: transparent;
+      text-align: right;
+      padding: 0;
+      padding-right: 2px;
+      &::-webkit-input-placeholder {
+        color: #800;
+        font-weight: bold;
+        font-size: 16pt;
+      }
+    }
+  }
+}
+.bottom-half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0px;
+  height: 200px;
+  background-color: gray;
 }
