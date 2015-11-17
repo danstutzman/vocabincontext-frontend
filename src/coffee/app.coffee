@@ -6,7 +6,7 @@ ReactDOM = require 'react-dom'
 Component = React.createClass
   displayName: 'Component'
   render: ->
-    { div, input } = React.DOM
+    { canvas, div, input } = React.DOM
 
     div
       className: 'screen'
@@ -28,9 +28,27 @@ Component = React.createClass
             input
               placeholder: 'Type reply here'
           else
-            throw new Error('responseType must be SAY, DRAW, or TYPE')
+            throw new Error('Unknown responseType')
+
       div
         className: 'bottom-half'
+        if @props.responseType is 'SAY'
+          'fake waveform here'
+        else if @props.responseType is 'DRAW'
+          canvas
+            className: 'drawing-pad'
+            width: 320
+            height: 200
+            onMouseDown:  (e) -> draw.findxy 'down', e
+            onMouseMove:  (e) -> draw.findxy 'move', e
+            onMouseUp:    (e) -> draw.findxy 'up', e
+            onMouseOut:   (e) -> draw.findxy 'out', e
+            onTouchStart: (e) -> draw.findxy2 'down', e
+            onTouchMove:  (e) -> draw.findxy2 'move', e
+        else if @props.responseType is 'TYPE'
+          'keyboard here'
+        else
+          throw new Error('Unknown responseType')
 
 time = 0
 render = ->
@@ -46,4 +64,3 @@ incrementTime = ->
 
 document.addEventListener 'DOMContentLoaded', (event) ->
   incrementTime()
-  draw.initDraw()

@@ -9,24 +9,13 @@ var x = "black",
     lineWidth = 10;
 
 function initDraw() {
-    canvas = document.getElementById('can');
-    ctx = canvas.getContext("2d");
-    w = canvas.width;
-    h = canvas.height;
 
     canvas.addEventListener("mousemove", function (e) { findxy('move', e) }, false);
     canvas.addEventListener("mousedown", function (e) { findxy('down', e) }, false);
     canvas.addEventListener("mouseup", function (e) { findxy('up', e) }, false);
     canvas.addEventListener("mouseout", function (e) { findxy('out', e) }, false);
-
-    canvas.addEventListener("touchstart", function (e) {
-      findxy('down', e)
-      e.preventDefault();
-    }, false);
-    canvas.addEventListener("touchmove", function (e) {
-      findxy2('move', e);
-      e.preventDefault();
-    }, false);
+    canvas.addEventListener("touchstart", function (e) { findxy('down', e) }, false);
+    canvas.addEventListener("touchmove", function (e) { findxy2('move', e); }, false);
 }
 
 function draw() {
@@ -42,26 +31,44 @@ function draw() {
 }
 
 function draw_circle() {
+    ctx.beginPath();
     ctx.arc(currX, currY, lineWidth / 2, 0, 2 * Math.PI, false);
     ctx.fillStyle = x;
     ctx.fill();
 }
 
 function findxy2(res, e) {
-  prevX = currX;
-  prevY = currY;
-  currX = e.touches[0].pageX - canvas.offsetLeft;
-  currY = e.touches[0].pageY - canvas.offsetTop;
-  draw();
+  canvas = e.target;
+  ctx = canvas.getContext("2d");
+
+  var rect = canvas.getBoundingClientRect();
+  if (res == 'down') {
+    currX = e.touches[0].pageX - rect.left - document.body.scrollLeft;
+    currY = e.touches[0].pageY - rect.top - document.body.scrollTop;
+    draw_circle();
+  } else if (res == 'move') {
+    prevX = currX;
+    prevY = currY;
+    currX = e.touches[0].pageX - rect.left - document.body.scrollLeft;
+    currY = e.touches[0].pageY - rect.top - document.body.scrollTop;
+
+    draw();
+  }
+
   e.preventDefault();
 }
 
 function findxy(res, e) {
+    //canvas = document.getElementById('can');
+    canvas = e.target;
+    ctx = canvas.getContext("2d");
+
     if (res == 'down') {
         prevX = currX;
         prevY = currY;
-        currX = e.pageX - canvas.offsetLeft;
-        currY = e.pageY - canvas.offsetTop;
+        var rect = canvas.getBoundingClientRect();
+        currX = e.pageX - rect.left - document.body.scrollLeft;
+        currY = e.pageY - rect.top - document.body.scrollTop;
 
         flag = true;
         dot_flag = true;
@@ -82,13 +89,21 @@ function findxy(res, e) {
         if (flag) {
             prevX = currX;
             prevY = currY;
-            currX = e.pageX - canvas.offsetLeft;
-            currY = e.pageY - canvas.offsetTop;
+            //currX = e.pageX - canvas.offsetLeft;
+            //currY = e.pageY - canvas.offsetTop;
+            var rect = canvas.getBoundingClientRect();
+            currX = e.pageX - rect.left - document.body.scrollLeft;
+            currY = e.pageY - rect.top - document.body.scrollTop;
             draw();
         }
     }
+
+    e.preventDefault();
 }
 
 module.exports = {
-  initDraw: initDraw
+  initDraw: initDraw,
+  draw:     draw,
+  findxy:   findxy,
+  findxy2:  findxy2
 };
