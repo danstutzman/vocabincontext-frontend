@@ -21,6 +21,7 @@ ScreenComponent = React.createClass
         className: 'present-card'
         div
           className: 'bent-corner'
+          onClick: (e) => @props.dispatch e, { type: 'FLIP_CARD' }
         div
           className: 'time-warning'
           if @props.responseType is 'SAY'
