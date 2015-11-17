@@ -1,4 +1,5 @@
 _        = require './baz.coffee'
+draw     = require './draw.js'
 React    = require 'react'
 ReactDOM = require 'react-dom'
 
@@ -45,3 +46,4 @@ incrementTime = ->
 
 document.addEventListener 'DOMContentLoaded', (event) ->
   incrementTime()
+  draw.initDraw()
