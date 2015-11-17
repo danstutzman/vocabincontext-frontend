@@ -8,6 +8,11 @@ Component = React.createClass
   render: ->
     { canvas, div, input } = React.DOM
 
+    minutes = if @props.time >= 60 then Math.floor(@props.time / 60) else ''
+    seconds = "#{@props.time % 60}"
+    seconds2Digits = if seconds.length == 1 then "0#{seconds}" else seconds
+    formattedTime = "#{minutes}:#{seconds2Digits}"
+
     div
       className: 'screen'
       div
@@ -21,9 +26,9 @@ Component = React.createClass
         div
           className: 'time-warning'
           if @props.responseType is 'SAY'
-            'Say aloud in :05'
+            "Say aloud in #{formattedTime}"
           else if @props.responseType is 'DRAW'
-            'Draw character below in :05'
+            "Draw character below in #{formattedTime}"
           else if @props.responseType is 'TYPE'
             input
               placeholder: 'Type reply here'
@@ -50,17 +55,18 @@ Component = React.createClass
         else
           throw new Error('Unknown responseType')
 
-time = 0
+time = 10
 render = ->
   target = document.getElementById('example')
   element = React.createElement Component, time: time, responseType: 'SAY'
   ReactDOM.render element, target
 
-incrementTime = ->
-  if time < 9
-    time += 1
+decrementTime = ->
+  if time > 0
+    time -= 5
     render()
-    window.setTimeout incrementTime, 500
+    window.setTimeout decrementTime, 5000
 
 document.addEventListener 'DOMContentLoaded', (event) ->
-  incrementTime()
+  render()
+  window.setTimeout decrementTime, 5000
