@@ -173,3 +173,42 @@ body {
   height: 200px;
   background-color: #eee;
 }
+
+.screen {
+  background-color: white;
+}
+.utterance {
+  margin-bottom: 10px;
+
+  &.left {
+    .word {
+      padding-right: 8px;
+    }
+  }
+  &.right {
+    text-align: right;
+    margin-left: auto;
+    .word {
+      padding-left: 8px;
+      &.last {
+        text-align: right;
+      }
+    }
+  }
+  .word {
+    display: inline-block;
+    text-align: left;
+
+    .pinyin {
+      font-family: sans-serif;
+      font-size: 22pt;
+      line-height: 100%;
+    }
+    .gloss {
+      font-family: 'HelveticaNeue-UltraLight';
+      font-size: 16pt;
+      color: #aaa;
+      line-height: 50%;
+    }
+  }
+}

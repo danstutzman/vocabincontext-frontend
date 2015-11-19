@@ -2,6 +2,7 @@ React           = require 'react'
 ReactDOM        = require 'react-dom'
 Redux           = require 'redux'
 ScreenComponent = require './ScreenComponent.coffee'
+DialogComponent = require './DialogComponent.coffee'
 
 reducer = (state, action) ->
   switch action.type
@@ -22,10 +23,11 @@ document.addEventListener 'DOMContentLoaded', (event) ->
       store.dispatch action
       render()
       e.preventDefault()
-    app = React.createElement ScreenComponent,
-      time: store.getState().counter
-      responseType: 'SAY'
-      dispatch: dispatch
+#    app = React.createElement ScreenComponent,
+#      time: store.getState().counter
+#      responseType: 'SAY'
+#      dispatch: dispatch
+    app = React.createElement DialogComponent, {}
     ReactDOM.render app, document.getElementById('root')
   render()
   decrementTime = ->
