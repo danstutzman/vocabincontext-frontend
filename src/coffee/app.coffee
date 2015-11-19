@@ -20,16 +20,17 @@ reducer = (state, action) ->
         state
     when 'SELECT_UTTERANCE'
       _.defaults { selected_utterance_num: action.utterance_num }, state
-    when 'MENU_CHOICE'
-      updates = switch action.new_current_screen
-        when 'DialogComponent'
-          { current_screen: 'DialogComponent' }
-        when 'FlashcardComponent'
+    when 'NEW_ROUTE'
+      route = action.new_route
+      updates = switch route[0]
+        when ''          then { current_screen: 'MenuComponent' }
+        when 'dialog'    then { current_screen: 'DialogComponent' }
+        when 'flashcard'
           current_screen: 'FlashcardComponent'
           response_type: 'SAY'
           counter: 10
         else
-          throw new Error("Unknown new_current_screen #{action.new_screen_current}")
+          throw new Error("Unknown route '#{action.new_route.join('/')}'")
       _.defaults updates, state
     else throw new Error("Unknown action type #{action.type}")
 
@@ -45,10 +46,18 @@ document.addEventListener 'DOMContentLoaded', (event) ->
       state: store.getState()
       dispatch: dispatch
     ReactDOM.render app, document.getElementById('root')
-  render()
+
+  handleNewHash = ->
+    route = window.location.hash.replace(/^#\/?|\/$/g, '').split('/')
+    store.dispatch { type: 'NEW_ROUTE', new_route: route }
+    render()
+  handleNewHash()
+  window.addEventListener 'hashchange', handleNewHash, false
+
   decrementTime = ->
     if store.getState().counter > 0
       store.dispatch { type: 'FIVE_SECONDS_PASSED' }
       render()
       window.setTimeout decrementTime, 5000
   window.setTimeout decrementTime, 5000
+

@@ -9,17 +9,11 @@ MenuComponent = React.createClass
         fontSize: '30pt'
       li {},
         a
-          href: '#'
-          onClick: (e) => @props.dispatch e,
-            type: 'MENU_CHOICE'
-            new_current_screen: 'DialogComponent'
+          href: '#/dialog'
           'Dialogs'
       li {},
         a
-          href: '#'
-          onClick: (e) => @props.dispatch e,
-            type: 'MENU_CHOICE'
-            new_current_screen: 'FlashcardComponent'
+          href: '#/flashcard'
           'Flashcards'
 
 module.exports = MenuComponent
