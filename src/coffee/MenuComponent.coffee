@@ -19,7 +19,7 @@ MenuComponent = React.createClass
           href: '#'
           onClick: (e) => @props.dispatch e,
             type: 'MENU_CHOICE'
-            new_current_screen: 'ScreenComponent'
+            new_current_screen: 'FlashcardComponent'
           'Flashcards'
 
 module.exports = MenuComponent

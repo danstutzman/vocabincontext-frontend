@@ -1,7 +1,7 @@
-React           = require 'react'
-MenuComponent   = require './MenuComponent.coffee'
-DialogComponent = require './DialogComponent.coffee'
-ScreenComponent = require './ScreenComponent.coffee'
+React              = require 'react'
+DialogComponent    = require './DialogComponent.coffee'
+MenuComponent      = require './MenuComponent.coffee'
+FlashcardComponent = require './FlashcardComponent.coffee'
 
 TopComponent = React.createClass
   displayName: 'TopComponent'
@@ -10,13 +10,13 @@ TopComponent = React.createClass
       when 'DialogComponent'
         React.createElement DialogComponent,
           dispatch: @props.dispatch
-      when 'MenuComponent'
-        React.createElement MenuComponent,
-          dispatch: @props.dispatch
-      when 'ScreenComponent'
-        React.createElement ScreenComponent,
+      when 'FlashcardComponent'
+        React.createElement FlashcardComponent,
           responseType: @props.state.response_type
           time: @props.state.counter
+          dispatch: @props.dispatch
+      when 'MenuComponent'
+        React.createElement MenuComponent,
           dispatch: @props.dispatch
       else
         throw new Error("Unknown current_screen '#{@props.state.current_screen}'")

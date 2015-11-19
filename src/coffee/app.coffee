@@ -1,11 +1,11 @@
-React           = require 'react'
-ReactDOM        = require 'react-dom'
-Redux           = require 'redux'
-ScreenComponent = require './ScreenComponent.coffee'
-DialogComponent = require './DialogComponent.coffee'
-MenuComponent   = require './MenuComponent.coffee'
-TopComponent    = require './TopComponent.coffee'
-_               = require 'underscore'
+React              = require 'react'
+ReactDOM           = require 'react-dom'
+Redux              = require 'redux'
+_                  = require 'underscore'
+DialogComponent    = require './DialogComponent.coffee'
+FlashcardComponent = require './FlashcardComponent.coffee'
+MenuComponent      = require './MenuComponent.coffee'
+TopComponent       = require './TopComponent.coffee'
 
 reducer = (state, action) ->
   switch action.type
@@ -24,8 +24,8 @@ reducer = (state, action) ->
       updates = switch action.new_current_screen
         when 'DialogComponent'
           { current_screen: 'DialogComponent' }
-        when 'ScreenComponent'
-          current_screen: 'ScreenComponent'
+        when 'FlashcardComponent'
+          current_screen: 'FlashcardComponent'
           response_type: 'SAY'
           counter: 10
         else

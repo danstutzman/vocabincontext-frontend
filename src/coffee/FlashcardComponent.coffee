@@ -1,8 +1,8 @@
 draw     = require './draw.js'
 React    = require 'react'
 
-ScreenComponent = React.createClass
-  displayName: 'ScreenComponent'
+FlashcardComponent = React.createClass
+  displayName: 'FlashcardComponent'
   render: ->
     { canvas, div, input } = React.DOM
 
@@ -54,4 +54,4 @@ ScreenComponent = React.createClass
         else
           throw new Error('Unknown responseType')
 
-module.exports = ScreenComponent
+module.exports = FlashcardComponent
