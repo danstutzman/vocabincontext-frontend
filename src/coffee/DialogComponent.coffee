@@ -29,6 +29,10 @@ DialogComponent = React.createClass
                 word[2] + words[words.length - 1][2]
               else
                 word[2]
+      word_divs.push div
+        key: 'english'
+        className: 'english'
+        utterance.english
        
       utterances.push div
         className: "utterance #{side}"

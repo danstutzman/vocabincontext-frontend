@@ -200,9 +200,10 @@ body {
     text-align: left;
 
     .pinyin {
-      font-family: sans-serif;
+      font-family: 'Arial';
       font-size: 22pt;
       line-height: 100%;
+      font-style: italic;
     }
     .gloss {
       font-family: 'HelveticaNeue-UltraLight';
@@ -210,5 +211,11 @@ body {
       color: #aaa;
       line-height: 50%;
     }
+  }
+  .english {
+    font-family: 'HelveticaNeue-Light';
+    font-size: 16pt;
+    line-height: 150%;
+    color: #777;
   }
 }
