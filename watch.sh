@@ -17,7 +17,7 @@ cat >>build/js/vendor.js <<EOF
     else { throw new Error("Unknown library '" + name + "'"); }
   }
 EOF
-#$BROWSERIFY -r underscore -d -v >> build/js/vendor.js
+$BROWSERIFY -r underscore -d -v >> build/js/vendor.js
 
 $WATCHIFY -t coffeeify src/coffee/app.coffee -d \
   -x react -x react-dom -x underscore \

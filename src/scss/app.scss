@@ -179,6 +179,7 @@ body {
 }
 .utterance {
   margin-bottom: 10px;
+  cursor: pointer;
 
   &.left {
     .word {
@@ -194,6 +195,9 @@ body {
         text-align: right;
       }
     }
+  }
+  &.selected {
+    background-color: #eee;
   }
   .word {
     display: inline-block;

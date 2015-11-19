@@ -10,6 +10,8 @@ DialogComponent = React.createClass
     for utterance, utterance_num in dialog
       words = utterance.gloss_table
       side = (if utterance.speaker_num == 1 then 'left' else 'right')
+      is_selected = (utterance_num == @props.selected_utterance_num)
+
       word_divs = []
       for word, word_num in utterance.gloss_table
         if word_num < words.length - 1
@@ -23,20 +25,25 @@ DialogComponent = React.createClass
                 word[1] + words[words.length - 1][1]
               else
                 word[1]
-            div
-              className: 'gloss'
-              if is_penultimate
-                word[2] + words[words.length - 1][2]
-              else
-                word[2]
-      word_divs.push div
-        key: 'english'
-        className: 'english'
-        utterance.english
+            if is_selected
+              div
+                className: 'gloss'
+                if is_penultimate
+                  word[2] + words[words.length - 1][2]
+                else
+                  word[2]
+      if is_selected
+        word_divs.push div
+          key: 'english'
+          className: 'english'
+          utterance.english
        
       utterances.push div
-        className: "utterance #{side}"
         key: utterance_num
+        className: "utterance #{side} #{if is_selected then 'selected' else ''}"
+        onClick: do (utterance_num) => (e) => @props.dispatch e,
+          type: 'SELECT_UTTERANCE'
+          utterance_num: utterance_num
         word_divs
 
     div
