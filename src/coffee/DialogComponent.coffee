@@ -40,14 +40,27 @@ DialogComponent = React.createClass
        
       utterances.push div
         key: utterance_num
+        'data-utterance-num': utterance_num
         className: "utterance #{side} #{if is_selected then 'selected' else ''}"
-        onClick: do (utterance_num) => (e) => @props.dispatch e,
-          type: 'SELECT_UTTERANCE'
-          utterance_num: utterance_num
+        onMouseEnter: do (utterance_num) => (e) =>
+          @props.dispatch e, type: 'SELECT_UTTERANCE', utterance_num: utterance_num
         word_divs
+
+    find_utterance = (e) =>
+      element = document.elementFromPoint(e.touches[0].pageX, e.touches[0].pageY)
+      while element.getAttribute
+        utterance_num = element.getAttribute('data-utterance-num')
+        if utterance_num
+          @props.dispatch e,
+            type: 'SELECT_UTTERANCE',
+            utterance_num: parseInt(utterance_num)
+          break
+        element = element.parentNode
 
     div
       className: 'screen'
+      onTouchStart: find_utterance
+      onTouchMove: find_utterance
       div
         className: 'dialog'
         utterances
