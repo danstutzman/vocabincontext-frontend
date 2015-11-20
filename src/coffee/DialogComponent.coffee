@@ -62,6 +62,17 @@ DialogComponent = React.createClass
       onTouchStart: find_utterance
       onTouchMove: find_utterance
       div
+        style:
+          fontSize: '30pt'
+        onClick: (e) =>
+          @props.dispatch e,
+            type: 'DIALOG/SET_PAUSED',
+            new_paused: not @props.paused
+        if @props.paused
+          'PLAY ALL'
+        else
+          'PAUSE ALL'
+      div
         className: 'dialog'
         utterances
 

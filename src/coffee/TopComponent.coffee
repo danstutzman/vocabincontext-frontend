@@ -9,6 +9,8 @@ TopComponent = React.createClass
     switch @props.state.current_screen
       when 'DialogComponent'
         React.createElement DialogComponent,
+          paused: @props.state.dialog?.paused
+          selected_utterance_num: @props.state.selected_utterance_num
           dispatch: @props.dispatch
       when 'FlashcardComponent'
         React.createElement FlashcardComponent,
