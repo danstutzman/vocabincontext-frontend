@@ -34,6 +34,19 @@ reducer = (state, action) ->
       _.defaults updates, state
     else throw new Error("Unknown action type #{action.type}")
 
+stringifyState = (object) ->
+  out = ''
+  keys = Object.keys(object).sort()
+  for key in keys
+    value = object[key]
+    if out != ''
+      out += ' '
+    if typeof(value) is 'object'
+      out += "#{key}{#{stringifyState(value)}}"
+    else
+      out += "#{key}:#{value}"
+  out
+
 document.addEventListener 'DOMContentLoaded', (event) ->
   store = Redux.createStore reducer, { current_screen: 'MenuComponent' }
   render = ->
@@ -41,7 +54,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
       store.dispatch action
       render()
       e.preventDefault()
-    console.log store.getState()
+    console.log stringifyState(store.getState())
     app = React.createElement TopComponent,
       state: store.getState()
       dispatch: dispatch
