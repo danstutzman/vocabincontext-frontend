@@ -42,7 +42,7 @@ DialogComponent = React.createClass
         key: utterance_num
         'data-utterance-num': utterance_num
         className: "utterance #{side} #{if is_selected then 'selected' else ''}"
-        onMouseEnter: do (utterance_num) => (e) =>
+        onMouseDown: do (utterance_num) => (e) =>
           @props.dispatch e, type: 'SELECT_UTTERANCE', utterance_num: utterance_num
         word_divs
 
