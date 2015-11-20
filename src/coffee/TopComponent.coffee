@@ -12,6 +12,7 @@ TopComponent = React.createClass
           depressed_button: @props.state.dialog.depressed_button
           selected_utterance_num: @props.state.selected_utterance_num
           dispatch: @props.dispatch
+          update_audio_from_state: @props.update_audio_from_state
       when 'FlashcardComponent'
         React.createElement FlashcardComponent,
           responseType: @props.state.response_type

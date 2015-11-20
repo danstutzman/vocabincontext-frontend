@@ -37,7 +37,7 @@ reducer = (state, action) ->
         _.defaults { counter: new_counter }, state
       else
         state
-    when 'SELECT_UTTERANCE'
+    when 'DIALOG/SELECT_UTTERANCE'
       _.defaults { selected_utterance_num: action.utterance_num }, state
     else throw new Error("Unknown action type #{action.type}")
 
@@ -69,57 +69,55 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     app = React.createElement TopComponent,
       state: store.getState()
       dispatch: dispatch
+      update_audio_from_state: update_audio_from_state
     ReactDOM.render app, document.getElementById('root')
 
-  oldDispatch = store.dispatch
   playingSource = null
-  store.dispatch = (action) ->
+  update_audio_from_state = ->
+    # stop any currently playing audio
+    if playingSource != null
+      playingSource.onended = null
+      playingSource.stop()
+      playingSource = null
+
     state = store.getState()
-    if action.type == 'DIALOG/SET_DEPRESSED_BUTTON'
-      if playingSource != null
-        playingSource.onended = null
-        playingSource.stop()
-      if action.new_depressed_button in ['PLAY_ONE', 'PLAY_ALL']
-        playingSource = window.myAudioContext.createBufferSource()
-        playingSource.buffer = window.myBuffer
-        playingSource.connect window.myAudioContext.destination
-        playingSource.onended = ->
-          oldDispatch
+
+    # if we should be playing something, start it playing
+    if state.dialog.depressed_button in ['PLAY_ONE', 'PLAY_ALL']
+      # select the first utterance if not is selected
+      if state.selected_utterance_num is null
+        store.dispatch
+          type: 'DIALOG/SELECT_UTTERANCE'
+          utterance_num: 0
+        render()
+
+      # start the audio playing
+      playingSource = window.myAudioContext.createBufferSource()
+      playingSource.buffer = window.myBuffer
+      playingSource.connect window.myAudioContext.destination
+      playingSource.onended = ->
+        if state.dialog.depressed_button is 'PLAY_ALL'
+          if state.selected_utterance_num < dialog.length - 1
+            store.dispatch
+              type: 'DIALOG/SELECT_UTTERANCE'
+              utterance_num: state.selected_utterance_num + 1
+            update_audio_from_state()
+          else
+            store.dispatch
+              type: 'DIALOG/SELECT_UTTERANCE'
+              utterance_num: null
+            store.dispatch
+              type: 'DIALOG/SET_DEPRESSED_BUTTON'
+              new_depressed_button: null
+        else if state.dialog.depressed_button is 'PLAY_ONE'
+          store.dispatch
             type: 'DIALOG/SET_DEPRESSED_BUTTON'
             new_depressed_button: null
-          if action.new_depressed_button == 'PLAY_ALL'
-            if state.selected_utterance_num < dialog.length - 1
-              oldDispatch
-                type: 'SELECT_UTTERANCE'
-                utterance_num: state.selected_utterance_num + 1
-              store.dispatch
-                type: 'DIALOG/SET_DEPRESSED_BUTTON'
-                new_depressed_button: 'PLAY_ALL'
-            else
-              oldDispatch
-                type: 'SELECT_UTTERANCE'
-                utterance_num: null
-              oldDispatch
-                type: 'DIALOG/SET_DEPRESSED_BUTTON'
-                new_depressed_button: null
-          else if action.new_depressed_button == 'PLAY_ONE'
-            oldDispatch
-              type: 'DIALOG/SET_DEPRESSED_BUTTON'
-              new_depressed_button: null
-          render()
-        if state.selected_utterance_num is null
-          oldDispatch
-            type: 'SELECT_UTTERANCE'
-            utterance_num: 0
-            oldDispatch
-              type: 'DIALOG/SET_DEPRESSED_BUTTON'
-              new_depressed_button: null
-          render()
-        span = dialog[state.selected_utterance_num || 0].m4a_milliseconds
-        playingSource.start 0,
-          Math.max(0, span[0] / 1000 - 0.1),
-          (span[1] - span[0]) / 1000 + 0.1
-    oldDispatch action
+        render()
+      span = dialog[state.selected_utterance_num || 0].m4a_milliseconds
+      playingSource.start 0,
+        Math.max(0, span[0] / 1000 - 0.1),
+        (span[1] - span[0]) / 1000 + 0.1
 
   handleNewHash = ->
     route = window.location.hash.replace(/^#\/?|\/$/g, '').split('/')

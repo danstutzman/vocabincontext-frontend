@@ -43,7 +43,12 @@ DialogComponent = React.createClass
         'data-utterance-num': utterance_num
         className: "utterance #{side} #{if is_selected then 'selected' else ''}"
         onMouseDown: do (utterance_num) => (e) =>
-          @props.dispatch e, type: 'SELECT_UTTERANCE', utterance_num: utterance_num
+          @props.dispatch e,
+            type: 'DIALOG/SELECT_UTTERANCE'
+            utterance_num: utterance_num
+          if utterance_num != @props.selected_utterance_num &&
+             @props.depressed_button == 'PLAY_ALL'
+            @props.update_audio_from_state()
         word_divs
 
     find_utterance = (e) =>
@@ -51,9 +56,11 @@ DialogComponent = React.createClass
       while element.getAttribute
         utterance_num = element.getAttribute('data-utterance-num')
         if utterance_num
-          @props.dispatch e,
-            type: 'SELECT_UTTERANCE',
-            utterance_num: parseInt(utterance_num)
+          if parseInt(utterance_num) != @props.selected_utterance_num
+            @props.dispatch e,
+              type: 'DIALOG/SELECT_UTTERANCE',
+              utterance_num: parseInt(utterance_num)
+            @props.update_audio_from_state()
           break
         element = element.parentNode
 
@@ -68,6 +75,7 @@ DialogComponent = React.createClass
             type: 'DIALOG/SET_DEPRESSED_BUTTON',
             new_depressed_button:
               if @props.depressed_button == 'PLAY_ONE' then null else 'PLAY_ONE'
+          @props.update_audio_from_state()
         div
           style:
             fontWeight: if @props.depressed_button == 'PLAY_ONE' then 'bold' else ''
@@ -79,6 +87,7 @@ DialogComponent = React.createClass
             type: 'DIALOG/SET_DEPRESSED_BUTTON',
             new_depressed_button:
               if @props.depressed_button == 'PLAY_ALL' then null else 'PLAY_ALL'
+          @props.update_audio_from_state()
         div
           style:
             fontWeight: if @props.depressed_button == 'PLAY_ALL' then 'bold' else ''
