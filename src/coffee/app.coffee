@@ -2,6 +2,7 @@ React              = require 'react'
 ReactDOM           = require 'react-dom'
 Redux              = require 'redux'
 _                  = require 'underscore'
+dialog             = require './dialog.js'
 DialogComponent    = require './DialogComponent.coffee'
 FlashcardComponent = require './FlashcardComponent.coffee'
 MenuComponent      = require './MenuComponent.coffee'
@@ -76,10 +77,8 @@ document.addEventListener 'DOMContentLoaded', (event) ->
         mySource.onended = ->
           oldDispatch { type: 'DIALOG/SET_PAUSED', new_paused: true }
           render()
-        if 'AudioContext' of window
-          mySource.start 0
-        else if 'webkitAudioContext' of window
-          mySource.noteOn 0
+        span = dialog[store.getState().selected_utterance_num].m4a_milliseconds
+        mySource.start 0, span[0] / 1000 - 0.1, (span[1] - span[0]) / 1000 + 0.1
     oldDispatch action
 
   handleNewHash = ->
@@ -104,7 +103,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     alert 'Your browser does not support yet Web Audio API'
 
   request = new XMLHttpRequest()
-  request.open 'GET', 'mp3/dialog0.m4a', true
+  request.open 'GET', 'mp3/dialog1.m4a', true
   request.responseType = 'arraybuffer'
   request.onload = ->
     success = (buffer) ->
