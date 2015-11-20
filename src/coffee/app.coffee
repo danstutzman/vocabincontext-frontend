@@ -18,7 +18,8 @@ reducer = (state, action) ->
         when 'dialog'
           current_screen: 'DialogComponent'
           dialog:
-            paused: true
+            depressed_button: null
+          selected_utterance_num: null
         when 'flashcard'
           current_screen: 'FlashcardComponent'
           response_type: 'SAY'
@@ -26,8 +27,8 @@ reducer = (state, action) ->
         else
           throw new Error("Unknown route '#{action.new_route.join('/')}'")
       _.defaults updates, state
-    when 'DIALOG/SET_PAUSED'
-      _.defaults { dialog: { paused: action.new_paused } }, state
+    when 'DIALOG/SET_DEPRESSED_BUTTON'
+      _.defaults { dialog: { depressed_button: action.new_depressed_button } }, state
     when 'FLIP_CARD'
       _.defaults { counter: 0 }, state
     when 'FIVE_SECONDS_PASSED'
@@ -41,17 +42,20 @@ reducer = (state, action) ->
     else throw new Error("Unknown action type #{action.type}")
 
 stringifyState = (object) ->
-  out = ''
-  keys = Object.keys(object).sort()
-  for key in keys
-    value = object[key]
-    if out != ''
-      out += ' '
-    if typeof(value) is 'object'
-      out += "#{key}{#{stringifyState(value)}}"
-    else
-      out += "#{key}:#{value}"
-  out
+  if object is null
+    'null'
+  else if typeof(object) is 'object'
+    keys = Object.keys(object).sort()
+    out = "{"
+    for key in keys
+      value = object[key]
+      if out != '{'
+        out += ' '
+      out += "#{key}:#{stringifyState(value)}"
+    out += "}"
+    out
+  else
+    "#{object}"
 
 document.addEventListener 'DOMContentLoaded', (event) ->
   store = Redux.createStore reducer, { current_screen: 'MenuComponent' }
@@ -68,17 +72,53 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     ReactDOM.render app, document.getElementById('root')
 
   oldDispatch = store.dispatch
+  playingSource = null
   store.dispatch = (action) ->
-    if action.type == 'DIALOG/SET_PAUSED'
-      if !action.new_paused
-        mySource = window.myAudioContext.createBufferSource()
-        mySource.buffer = window.myBuffer
-        mySource.connect window.myAudioContext.destination
-        mySource.onended = ->
-          oldDispatch { type: 'DIALOG/SET_PAUSED', new_paused: true }
+    state = store.getState()
+    if action.type == 'DIALOG/SET_DEPRESSED_BUTTON'
+      if playingSource != null
+        playingSource.onended = null
+        playingSource.stop()
+      if action.new_depressed_button in ['PLAY_ONE', 'PLAY_ALL']
+        playingSource = window.myAudioContext.createBufferSource()
+        playingSource.buffer = window.myBuffer
+        playingSource.connect window.myAudioContext.destination
+        playingSource.onended = ->
+          oldDispatch
+            type: 'DIALOG/SET_DEPRESSED_BUTTON'
+            new_depressed_button: null
+          if action.new_depressed_button == 'PLAY_ALL'
+            if state.selected_utterance_num < dialog.length - 1
+              oldDispatch
+                type: 'SELECT_UTTERANCE'
+                utterance_num: state.selected_utterance_num + 1
+              store.dispatch
+                type: 'DIALOG/SET_DEPRESSED_BUTTON'
+                new_depressed_button: 'PLAY_ALL'
+            else
+              oldDispatch
+                type: 'SELECT_UTTERANCE'
+                utterance_num: null
+              oldDispatch
+                type: 'DIALOG/SET_DEPRESSED_BUTTON'
+                new_depressed_button: null
+          else if action.new_depressed_button == 'PLAY_ONE'
+            oldDispatch
+              type: 'DIALOG/SET_DEPRESSED_BUTTON'
+              new_depressed_button: null
           render()
-        span = dialog[store.getState().selected_utterance_num].m4a_milliseconds
-        mySource.start 0, span[0] / 1000 - 0.1, (span[1] - span[0]) / 1000 + 0.1
+        if state.selected_utterance_num is null
+          oldDispatch
+            type: 'SELECT_UTTERANCE'
+            utterance_num: 0
+            oldDispatch
+              type: 'DIALOG/SET_DEPRESSED_BUTTON'
+              new_depressed_button: null
+          render()
+        span = dialog[state.selected_utterance_num || 0].m4a_milliseconds
+        playingSource.start 0,
+          Math.max(0, span[0] / 1000 - 0.1),
+          (span[1] - span[0]) / 1000 + 0.1
     oldDispatch action
 
   handleNewHash = ->

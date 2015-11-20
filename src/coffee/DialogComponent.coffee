@@ -62,16 +62,27 @@ DialogComponent = React.createClass
       onTouchStart: find_utterance
       onTouchMove: find_utterance
       div
-        style:
-          fontSize: '30pt'
+        style: { fontSize: '30pt', float: 'left' }
         onClick: (e) =>
           @props.dispatch e,
-            type: 'DIALOG/SET_PAUSED',
-            new_paused: not @props.paused
-        if @props.paused
-          'PLAY ALL'
-        else
-          'PAUSE ALL'
+            type: 'DIALOG/SET_DEPRESSED_BUTTON',
+            new_depressed_button:
+              if @props.depressed_button == 'PLAY_ONE' then null else 'PLAY_ONE'
+        div
+          style:
+            fontWeight: if @props.depressed_button == 'PLAY_ONE' then 'bold' else ''
+          'Play one'
+      div
+        style: { fontSize: '30pt' }
+        onClick: (e) =>
+          @props.dispatch e,
+            type: 'DIALOG/SET_DEPRESSED_BUTTON',
+            new_depressed_button:
+              if @props.depressed_button == 'PLAY_ALL' then null else 'PLAY_ALL'
+        div
+          style:
+            fontWeight: if @props.depressed_button == 'PLAY_ALL' then 'bold' else ''
+          'Play all'
       div
         className: 'dialog'
         utterances
