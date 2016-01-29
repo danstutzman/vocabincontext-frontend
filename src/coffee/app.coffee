@@ -93,6 +93,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
             play_state: 'STOPPED'
             line_num: action.line_num
         audio.play()
+      dispatch action
     #console.log stringifyState(store.getState())
     #app = React.createElement TopComponent,
     #  state: store.getState()
