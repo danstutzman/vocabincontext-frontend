@@ -57,3 +57,6 @@ File.open('dist/index.html', 'w') do |f|
   f.write index
 end
 "
+
+rm -rf ~/dev/vocabincontext/public/*
+cp -R dist/* ~/dev/vocabincontext/public
