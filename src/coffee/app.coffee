@@ -7,6 +7,7 @@ DialogComponent    = require './DialogComponent.coffee'
 FlashcardComponent = require './FlashcardComponent.coffee'
 MenuComponent      = require './MenuComponent.coffee'
 TopComponent       = require './TopComponent.coffee'
+VocabInContextComponent = require './VocabInContextComponent.coffee'
 
 reducer = (state, action) ->
   switch action.type
@@ -39,6 +40,10 @@ reducer = (state, action) ->
         state
     when 'DIALOG/SELECT_UTTERANCE'
       _.defaults { selected_utterance_num: action.utterance_num }, state
+    when 'GOT_ERROR'
+      _.defaults { error: action.error }
+    when 'GOT_DATA'
+      _.defaults { data: action.data }
     else throw new Error("Unknown action type #{action.type}")
 
 stringifyState = (object) ->
@@ -58,7 +63,7 @@ stringifyState = (object) ->
     "#{object}"
 
 document.addEventListener 'DOMContentLoaded', (event) ->
-  store = Redux.createStore reducer, { current_screen: 'MenuComponent' }
+  store = Redux.createStore reducer, { }
 
   render = ->
     dispatch = (e, action) ->
@@ -66,10 +71,12 @@ document.addEventListener 'DOMContentLoaded', (event) ->
       render()
       e.preventDefault()
     console.log stringifyState(store.getState())
-    app = React.createElement TopComponent,
+    #app = React.createElement TopComponent,
+    #  state: store.getState()
+    #  dispatch: dispatch
+    #  update_audio_from_state: update_audio_from_state
+    app = React.createElement VocabInContextComponent,
       state: store.getState()
-      dispatch: dispatch
-      update_audio_from_state: update_audio_from_state
     ReactDOM.render app, document.getElementById('root')
 
   playingSource = null
@@ -119,12 +126,12 @@ document.addEventListener 'DOMContentLoaded', (event) ->
         Math.max(0, span[0] / 1000 - 0.1),
         (span[1] - span[0]) / 1000 + 0.1
 
-  handleNewHash = ->
-    route = window.location.hash.replace(/^#\/?|\/$/g, '').split('/')
-    store.dispatch { type: 'NEW_ROUTE', new_route: route }
-    render()
-  handleNewHash()
-  window.addEventListener 'hashchange', handleNewHash, false
+  #handleNewHash = ->
+  #  route = window.location.hash.replace(/^#\/?|\/$/g, '').split('/')
+  #  store.dispatch { type: 'NEW_ROUTE', new_route: route }
+  #  render()
+  #handleNewHash()
+  #window.addEventListener 'hashchange', handleNewHash, false
 
   decrementTime = ->
     if store.getState().counter > 0
@@ -140,13 +147,33 @@ document.addEventListener 'DOMContentLoaded', (event) ->
   else
     alert 'Your browser does not support yet Web Audio API'
 
-  request = new XMLHttpRequest()
-  request.open 'GET', 'mp3/dialog1.m4a', true
-  request.responseType = 'arraybuffer'
-  request.onload = ->
-    success = (buffer) ->
-      window.myBuffer = buffer
-    error = (e) ->
-      throw new Error "Error decoding audio data: #{if e then e.err}"
-    window.myAudioContext.decodeAudioData request.response, success, error
-  request.send()
+  req = { method: 'GET', url: 'http://localhost:9292/api?q=' }
+  xhr = new XMLHttpRequest()
+  xhr.open req.method, req.url, true
+  xhr.onload = ->
+    switch xhr.status
+      when 200
+        store.dispatch type: 'GOT_DATA', data: JSON.parse(xhr.responseText)
+        render()
+      else
+        store.dispatch
+          type: 'GOT_ERROR'
+          error: "Error #{xhr.status} #{xhr.statusText} from #{req.method} #{req.url}"
+        render()
+  xhr.onerror = ->
+    store.dispatch
+      type: 'GOT_ERROR'
+      error: "Error #{xhr.status} #{xhr.statusText} from #{req.method} #{req.url}"
+    render()
+  xhr.send()
+
+  #request = new XMLHttpRequest()
+  #request.open 'GET', 'mp3/dialog1.m4a', true
+  #request.responseType = 'arraybuffer'
+  #request.onload = ->
+  #  success = (buffer) ->
+  #    window.myBuffer = buffer
+  #  error = (e) ->
+  #    throw new Error "Error decoding audio data: #{if e then e.err}"
+  #  window.myAudioContext.decodeAudioData request.response, success, error
+  #request.send()
