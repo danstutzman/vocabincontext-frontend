@@ -34,6 +34,9 @@ $BROWSERIFY -t coffeeify src/coffee/app.coffee -v \
 
 sass --sourcemap=none --update src/scss:dist/css --style compressed
 
+mkdir -p dist/images
+cp src/images/*.png dist/images
+
 rm -f dist/assets.json
 node_modules/hashmark/bin/hashmark dist/css/*.css -r true -l 5 -m dist/assets.json 'dist/css/{name}.{hash}{ext}'
 node_modules/hashmark/bin/hashmark dist/js/*.js -r true -l 5 -m dist/assets.json 'dist/js/{name}.{hash}{ext}'
