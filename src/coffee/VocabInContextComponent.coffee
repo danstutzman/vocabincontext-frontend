@@ -24,12 +24,17 @@ VocabInContextComponent = React.createClass
                 background: "url(#{line.cover_image_url})"
             if line.play_state == 'LOADING'
               div className: 'spinner', style: display: 'block'
+            else if line.play_state == 'PLAYING'
+              null
             else
               div
                 className: 'play-button'
                 onClick: (e) ->
                   e.preventDefault()
-                  dispatch type: 'PLAY', line_num: lineNum
+                  dispatch
+                    type: 'SET_AUDIO_PLAY_STATE'
+                    play_state: 'LOADING'
+                    line_num: lineNum
             div
               className: 'utterance'
               _.map line.words, (word, w) ->

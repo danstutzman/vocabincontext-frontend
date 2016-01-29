@@ -48,8 +48,8 @@ reducer = (state, action) ->
       update error: $set: action.error
     when 'GOT_DATA'
       update data: $set: action.data
-    when 'PLAY'
-      update data: lines: "#{action.line_num}": play_state: $set: 'LOADING'
+    when 'SET_AUDIO_PLAY_STATE'
+      update data: lines: "#{action.line_num}": play_state: $set: action.play_state
     else throw new Error("Unknown action type #{action.type}")
 
 stringifyState = (object) ->
@@ -75,14 +75,32 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     dispatch = (action) ->
       store.dispatch action
       render()
-    console.log stringifyState(store.getState())
+    dispatchAffectingAudio = (action) ->
+      if action.type == 'SET_AUDIO_PLAY_STATE' and action.play_state == 'LOADING'
+        line = store.getState().data.lines[action.line_num]
+        audio = new Audio('http://localhost:9292/excerpt.aac' +
+          '?video_id=' + line.video_id +
+          '&begin_millis=' + line.begin_millis +
+          '&end_millis=' + line.end_millis)
+        audio.addEventListener 'playing', ->
+          dispatch
+            type: 'SET_AUDIO_PLAY_STATE'
+            play_state: 'PLAYING'
+            line_num: action.line_num
+        audio.addEventListener 'ended', ->
+          dispatch
+            type: 'SET_AUDIO_PLAY_STATE'
+            play_state: 'STOPPED'
+            line_num: action.line_num
+        audio.play()
+    #console.log stringifyState(store.getState())
     #app = React.createElement TopComponent,
     #  state: store.getState()
     #  dispatch: dispatch
     #  update_audio_from_state: update_audio_from_state
     app = React.createElement VocabInContextComponent,
       state: store.getState()
-      dispatch: dispatch
+      dispatch: dispatchAffectingAudio
     ReactDOM.render app, document.getElementById('root')
 
   playingSource = null
