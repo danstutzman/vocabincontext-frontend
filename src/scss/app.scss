@@ -177,49 +177,80 @@ body {
 .screen {
   background-color: white;
 }
+
 .utterance {
   margin-bottom: 10px;
-  cursor: pointer;
 
-  &.left {
-    .word {
-      padding-right: 8px;
-    }
-  }
-  &.right {
-    text-align: right;
-    margin-left: auto;
-    .word {
-      padding-left: 8px;
-      &.last {
-        text-align: right;
-      }
-    }
-  }
-  &.selected {
-    background-color: #eee;
-  }
   .word {
+    padding-right: 0px;
     display: inline-block;
     text-align: left;
 
-    .pinyin {
-      font-family: 'Arial';
-      font-size: 22pt;
-      line-height: 100%;
+    .spanish {
       font-style: italic;
+      margin-right: 5px;
+      font-size: 16pt;
+      line-height: 100%;
     }
     .gloss {
-      font-family: 'HelveticaNeue-UltraLight';
-      font-size: 16pt;
       color: #aaa;
+      line-height: 50%;
+      margin-right: 5px;
+      font-size: 10pt;
+      font-family: 'AvenirNextCondensed-UltraLight';
       line-height: 50%;
     }
   }
-  .english {
-    font-family: 'HelveticaNeue-Light';
-    font-size: 16pt;
-    line-height: 150%;
-    color: #777;
-  }
+}
+.rating1 {
+  color: green;
+}
+.rating2 {
+  color: #770;
+}
+.rating3 {
+  color: red;
+}
+
+.excerpt { width: 320px; min-height: 64px; border-bottom: 1px #777 solid; cursor: pointer; position: relative; clear: both; }
+.excerpt.nonexpanded { height: 64px; overflow: hidden; }
+.excerpt .cover { width: 64px; height: 64px; position: absolute; right: 0; bottom: 0; }
+.excerpt.nonexpanded .cover { -webkit-filter: grayscale(100%); filter: grayscale(100%); }
+.excerpt.expanded { display: none; }
+.excerpt .play-button { width: 64px; height: 64px; background: url('../images/play_button4.png'); background-size: 64px 64px; position: absolute; right: 0; bottom: 0; }
+.excerpt .quote { font-size: 15pt; margin-left: 5px; margin-right: 75px; line-height: 125%; padding-top: 5px; }
+.excerpt .song-name { font-style: italic; font-size: 16pt; margin-left: 5px; }
+.excerpt .artist-name { font-size: 16pt; margin-left: 5px; }
+.excerpt .spinner { position: absolute; right: 0; bottom: 0; display: none; }
+.excerpt.nonexpanded .utterance { margin-right: 64px; }
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: solid #FFF;
+  border-width: 7px 0px 0px 0px;
+  margin: 7px; /* (64px - 50px) / 2 */
+  -webkit-border-radius: 50%;
+     -moz-border-radius: 50%;
+          border-radius: 50%;
+  -webkit-animation: spin 0.5s infinite linear;
+     -moz-animation: spin 0.5s infinite linear;
+       -o-animation: spin 0.5s infinite linear;
+          animation: spin 0.5s infinite linear;
+}
+@-webkit-keyframes spin {
+  from {-webkit-transform: rotate(0deg);}
+  to {-webkit-transform: rotate(359deg);}
+}
+@-moz-keyframes spin {
+  from {-moz-transform: rotate(0deg);}
+  to {-moz-transform: rotate(359deg);}
+}
+@-o-keyframes spin {
+  from {-o-transform: rotate(0deg);}
+  to {-o-transform: rotate(359deg);}
+}
+@keyframes spin{
+  from {transform: rotate(0deg);}
+  to {transform: rotate(359deg);}
 }

@@ -1,5 +1,6 @@
 React              = require 'react'
 ReactDOM           = require 'react-dom'
+ReactAddonsUpdate  = require 'react-addons-update'
 Redux              = require 'redux'
 _                  = require 'underscore'
 dialog             = require './dialog.js'
@@ -9,7 +10,10 @@ MenuComponent      = require './MenuComponent.coffee'
 TopComponent       = require './TopComponent.coffee'
 VocabInContextComponent = require './VocabInContextComponent.coffee'
 
+
 reducer = (state, action) ->
+  #console.log 'action', stringifyState(action)
+  update = (commands) -> ReactAddonsUpdate state, commands
   switch action.type
     when '@@redux/INIT' then state
     when 'NEW_ROUTE'
@@ -41,9 +45,11 @@ reducer = (state, action) ->
     when 'DIALOG/SELECT_UTTERANCE'
       _.defaults { selected_utterance_num: action.utterance_num }, state
     when 'GOT_ERROR'
-      _.defaults { error: action.error }
+      update error: $set: action.error
     when 'GOT_DATA'
-      _.defaults { data: action.data }
+      update data: $set: action.data
+    when 'PLAY'
+      update data: lines: "#{action.line_num}": play_state: $set: 'LOADING'
     else throw new Error("Unknown action type #{action.type}")
 
 stringifyState = (object) ->
@@ -66,10 +72,9 @@ document.addEventListener 'DOMContentLoaded', (event) ->
   store = Redux.createStore reducer, { }
 
   render = ->
-    dispatch = (e, action) ->
+    dispatch = (action) ->
       store.dispatch action
       render()
-      e.preventDefault()
     console.log stringifyState(store.getState())
     #app = React.createElement TopComponent,
     #  state: store.getState()
@@ -77,6 +82,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     #  update_audio_from_state: update_audio_from_state
     app = React.createElement VocabInContextComponent,
       state: store.getState()
+      dispatch: dispatch
     ReactDOM.render app, document.getElementById('root')
 
   playingSource = null
