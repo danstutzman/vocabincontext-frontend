@@ -10,6 +10,9 @@ MenuComponent      = require './MenuComponent.coffee'
 TopComponent       = require './TopComponent.coffee'
 VocabInContextComponent = require './VocabInContextComponent.coffee'
 
+backendRoot = switch window.location.hostname
+  when 'localhost' then 'http://localhost:9292'
+  else 'http://digitalocean.vocabincontext.com'
 
 reducer = (state, action) ->
   #console.log 'action', stringifyState(action)
@@ -78,7 +81,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     dispatchAffectingAudio = (action) ->
       if action.type == 'SET_AUDIO_PLAY_STATE' and action.play_state == 'LOADING'
         line = store.getState().data.lines[action.line_num]
-        audio = new Audio('http://localhost:9292/excerpt.aac' +
+        audio = new Audio(backendRoot + '/excerpt.aac' +
           '?video_id=' + line.video_id +
           '&begin_millis=' + line.begin_millis +
           '&end_millis=' + line.end_millis)
@@ -172,7 +175,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
   else
     alert 'Your browser does not support yet Web Audio API'
 
-  req = { method: 'GET', url: 'http://localhost:9292/api?q=' }
+  req = { method: 'GET', url: "#{backendRoot}/api?q=" }
   xhr = new XMLHttpRequest()
   xhr.open req.method, req.url, true
   xhr.onload = ->
