@@ -215,8 +215,10 @@ body {
 .excerpt { width: 320px; min-height: 64px; border-bottom: 1px #777 solid; cursor: pointer; position: relative; clear: both; }
 .excerpt.nonexpanded { height: 64px; overflow: hidden; }
 .excerpt .cover { width: 64px; height: 64px; position: absolute; right: 0; bottom: 0; }
-.excerpt.nonexpanded .cover { -webkit-filter: grayscale(100%); filter: grayscale(100%); }
-.excerpt.expanded { display: none; }
+.excerpt.nonexpanded .cover {
+  -webkit-filter: grayscale(100%) brightness(0.65);
+  filter:         grayscale(100%) brightness(0.65);
+}
 .excerpt .play-button { width: 64px; height: 64px; background: url('../images/play_button4.png'); background-size: 64px 64px; position: absolute; right: 0; bottom: 0; }
 .excerpt .quote { font-size: 15pt; margin-left: 5px; margin-right: 75px; line-height: 125%; padding-top: 5px; }
 .excerpt .song-name { font-style: italic; font-size: 16pt; margin-left: 5px; }

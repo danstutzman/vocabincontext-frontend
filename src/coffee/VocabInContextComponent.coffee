@@ -16,8 +16,8 @@ VocabInContextComponent = React.createClass
       _.map state.data.lines, (line, lineNum) ->
         do (lineNum) ->
           div
-            className: 'excerpt nonexpanded'
             key: lineNum
+            className: "excerpt #{if line.expanded then 'expanded' else 'nonexpanded'}"
 
             div
               className: 'cover'
@@ -33,6 +33,8 @@ VocabInContextComponent = React.createClass
                 className: 'play-button'
                 onClick: (e) ->
                   e.preventDefault()
+                  if not line.expanded
+                    dispatch type: 'SET_EXPANDED', line_num: lineNum
                   dispatch
                     type: 'SET_AUDIO_PLAY_STATE'
                     play_state: 'LOADING'
@@ -40,6 +42,10 @@ VocabInContextComponent = React.createClass
 
             div
               className: 'utterance'
+              onClick: (e) ->
+                dispatch
+                  type: 'SET_EXPANDED'
+                  line_num: if line.expanded then null else lineNum
               _.map line.words, (word, w) ->
                 div
                   key: w

@@ -53,6 +53,11 @@ reducer = (state, action) ->
       update data: $set: action.data
     when 'SET_AUDIO_PLAY_STATE'
       update data: lines: "#{action.line_num}": play_state: $set: action.play_state
+    when 'SET_EXPANDED'
+      updateLines = {}
+      for line, lineNum in state.data.lines
+        updateLines[lineNum] = expanded: $set: lineNum == action.line_num
+      update data: lines: updateLines
     else throw new Error("Unknown action type #{action.type}")
 
 stringifyState = (object) ->
