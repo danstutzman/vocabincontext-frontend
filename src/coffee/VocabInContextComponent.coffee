@@ -23,6 +23,11 @@ VocabInContextComponent = React.createClass
               className: 'cover'
               style:
                 background: "url(#{line.cover_image_url})"
+              onClick: (e) ->
+                dispatch
+                  type: 'SET_AUDIO_PLAY_STATE'
+                  play_state: null
+                  line_num: lineNum
 
             if line.play_state == 'LOADING'
               div className: 'spinner', style: display: 'block'

@@ -79,29 +79,36 @@ stringifyState = (object) ->
 document.addEventListener 'DOMContentLoaded', (event) ->
   store = Redux.createStore reducer, { }
 
+  currentlyPlayingAudio = null
   render = ->
     dispatch = (action) ->
       store.dispatch action
       render()
+
     dispatchAffectingAudio = (action) ->
-      if action.type == 'SET_AUDIO_PLAY_STATE' and action.play_state == 'LOADING'
+      if action.type == 'SET_AUDIO_PLAY_STATE'
+        if currentlyPlayingAudio
+          currentlyPlayingAudio.pause()
+
         line = store.getState().data.lines[action.line_num]
-        audio = new Audio(backendRoot + '/excerpt.aac' +
-          '?video_id=' + line.video_id +
-          '&begin_millis=' + line.begin_millis +
-          '&end_millis=' + line.end_millis)
-        audio.addEventListener 'playing', ->
-          dispatch
-            type: 'SET_AUDIO_PLAY_STATE'
-            play_state: 'PLAYING'
-            line_num: action.line_num
-        audio.addEventListener 'ended', ->
-          dispatch
-            type: 'SET_AUDIO_PLAY_STATE'
-            play_state: 'STOPPED'
-            line_num: action.line_num
-        audio.play()
+        if action.play_state == 'LOADING'
+          currentlyPlayingAudio = new Audio(backendRoot + '/excerpt.aac' +
+            '?video_id=' + line.video_id +
+            '&begin_millis=' + line.begin_millis +
+            '&end_millis=' + line.end_millis)
+          currentlyPlayingAudio.addEventListener 'playing', ->
+            dispatch
+              type: 'SET_AUDIO_PLAY_STATE'
+              play_state: 'PLAYING'
+              line_num: action.line_num
+          currentlyPlayingAudio.addEventListener 'ended', ->
+            dispatch
+              type: 'SET_AUDIO_PLAY_STATE'
+              play_state: 'STOPPED'
+              line_num: action.line_num
+          currentlyPlayingAudio.play()
       dispatch action
+
     #console.log stringifyState(store.getState())
     #app = React.createElement TopComponent,
     #  state: store.getState()
