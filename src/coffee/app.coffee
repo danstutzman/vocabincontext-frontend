@@ -20,7 +20,10 @@ reducer = (state, action) ->
   switch action.type
     when '@@redux/INIT' then state
     when 'NEW_ROUTE'
-      update loading_state: { $set: 'LOADING' }, data: $set: null
+      update
+        loading_state: { $set: 'LOADING' }
+        params: { $set: action.params }
+        data: $set: null
     when 'DIALOG/SET_DEPRESSED_BUTTON'
       _.defaults { dialog: { depressed_button: action.new_depressed_button } }, state
     when 'FLIP_CARD'

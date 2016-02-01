@@ -30,6 +30,7 @@ TopComponent = React.createClass
             id: 'query'
             ref: 'query'
             name: 'query'
+            defaultValue: state.params.q
             placeholder: 'Filter by word'
             onKeyDown: (e) =>
               if e.keyCode == ENTER_KEY_CODE
