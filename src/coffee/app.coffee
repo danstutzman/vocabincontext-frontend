@@ -94,7 +94,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
   currentlyPlayingAudio = null
   dispatchAndRender = (action) ->
     if action.type == 'SET_AUDIO_PLAY_STATE'
-      if currentlyPlayingAudio
+      if currentlyPlayingAudio and action.play_state != 'PLAYING'
         currentlyPlayingAudio.pause()
 
       line = store.getState().data.lines[action.line_num]
