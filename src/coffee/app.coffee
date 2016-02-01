@@ -67,6 +67,16 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     app = React.createElement TopComponent,
       state: store.getState()
       dispatch: dispatchAndRender
+      goToRoute: (params) ->
+        paramsString = ''
+        keys = (key for key of params)
+        keys.sort()
+        for key in keys
+          paramsString += (if paramsString == '' then '?' else '&') +
+            "#{encodeURIComponent(key)}=#{encodeURIComponent(params[key])}"
+        window.history.pushState { params: params }, null, "/#{paramsString}"
+        dispatchAndRender type: 'NEW_ROUTE', params: params
+
     ReactDOM.render app, document.getElementById('root')
 
   store = Redux.createStore reducer, { loading_state: 'LOADING' }
@@ -116,13 +126,6 @@ document.addEventListener 'DOMContentLoaded', (event) ->
         currentlyPlayingAudio.play()
 
     if action.type == 'NEW_ROUTE'
-      paramsString = ''
-      keys = (key for key of action.params)
-      keys.sort()
-      for key in keys
-        paramsString += (if paramsString == '' then '?' else '&') +
-          "#{encodeURIComponent(key)}=#{encodeURIComponent(action.params[key])}"
-      window.history.pushState { params: action.params }, null, "/#{paramsString}"
       handleParams action.params
 
     store.dispatch action

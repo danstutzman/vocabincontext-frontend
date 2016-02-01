@@ -7,7 +7,7 @@ TopComponent = React.createClass
   displayName: 'TopComponent'
   render: ->
     { button, div, img, input } = React.DOM
-    { state, dispatch } = @props
+    { state, dispatch, goToRoute } = @props
 
     switch state.loading_state
       when 'LOADING'
@@ -33,7 +33,7 @@ TopComponent = React.createClass
             placeholder: 'Filter by word'
             onKeyDown: (e) =>
               if e.keyCode == ENTER_KEY_CODE
-                dispatch type: 'NEW_ROUTE', params: { q: @refs.query.value }
+                goToRoute q: @refs.query.value
           button
             className: 'search'
           React.createElement VocabInContextComponent,
