@@ -38,7 +38,7 @@ TopComponent = React.createClass
           button
             className: 'search'
           React.createElement VocabInContextComponent,
-            state: @props.state,
-            dispatch: @props.dispatch
+            state: state,
+            dispatch: dispatch
 
 module.exports = TopComponent
