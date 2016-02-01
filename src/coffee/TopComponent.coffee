@@ -33,11 +33,9 @@ TopComponent = React.createClass
             placeholder: 'Filter by word'
             onKeyDown: (e) =>
               if e.keyCode == ENTER_KEY_CODE
-                pathname = if @refs.query.value
-                  "/search/#{encodeURIComponent(@refs.query.value)}"
-                else
-                  ''
-                dispatch type: 'NEW_ROUTE', pathname: pathname
+                dispatch
+                  type: 'NEW_ROUTE'
+                  params: "?q=#{encodeURIComponent(@refs.query.value)}"
           button
             className: 'search'
           React.createElement VocabInContextComponent,

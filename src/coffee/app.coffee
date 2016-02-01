@@ -71,35 +71,31 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
   store = Redux.createStore reducer, { loading_state: 'LOADING' }
 
-  handlePathname = (pathname) ->
-    if pathname == '' or pathname == '/'
-      parts = ['search', '']
-    else
-      parts = pathname.split('/')
-      parts.shift() # so /a/b becomes ['a','b'] not ['','a','b']
+  handleParams = (paramsString) ->
+    params = {}
+    for item in paramsString.substr(1).split('&')
+      if item != ''
+        s = item.split("=")
+        params[s[0]] = s[1] && decodeURIComponent(s[1])
 
-    if parts[0] == 'search'
-      query = parts[1]
-      req = { method: 'GET', url: "#{backendRoot}/api?q=#{query}" }
-      xhr = new XMLHttpRequest()
-      xhr.open req.method, req.url, true
-      xhr.onload = ->
-        switch xhr.status
-          when 200
-            dispatchAndRender type: 'GOT_DATA', data: JSON.parse(xhr.responseText)
-          else
-            dispatchAndRender
-              type: 'GOT_ERROR'
-              error: "Error #{xhr.status} #{xhr.statusText} from #{
-                req.method} #{req.url}"
-      xhr.onerror = ->
-        dispatchAndRender
-          type: 'GOT_ERROR'
-          error: "Error #{xhr.status} #{xhr.statusText} from #{
-            req.method} #{req.url}"
-      xhr.send()
-    else
-      throw new Error("Don't understand pathname #{pathname}")
+    req = { method: 'GET', url: "#{backendRoot}/api?q=#{params.q || ''}" }
+    xhr = new XMLHttpRequest()
+    xhr.open req.method, req.url, true
+    xhr.onload = ->
+      switch xhr.status
+        when 200
+          dispatchAndRender type: 'GOT_DATA', data: JSON.parse(xhr.responseText)
+        else
+          dispatchAndRender
+            type: 'GOT_ERROR'
+            error: "Error #{xhr.status} #{xhr.statusText} from #{
+              req.method} #{req.url}"
+    xhr.onerror = ->
+      dispatchAndRender
+        type: 'GOT_ERROR'
+        error: "Error #{xhr.status} #{xhr.statusText} from #{
+          req.method} #{req.url}"
+    xhr.send()
 
   currentlyPlayingAudio = null
   dispatchAndRender = (action) ->
@@ -126,15 +122,15 @@ document.addEventListener 'DOMContentLoaded', (event) ->
         currentlyPlayingAudio.play()
 
     if action.type == 'NEW_ROUTE'
-      window.history.pushState { pathname: action.pathname }, null, action.pathname
-      handlePathname action.pathname
+      window.history.pushState { params: action.params }, null, "/#{action.params}"
+      handleParams action.params
 
     store.dispatch action
     render dispatchAndRender
 
   window.onpopstate = (event) ->
-    dispatchAndRender type: 'NEW_ROUTE', pathname: document.location.pathname
-  window.onpopstate null # handle current pathname
+    dispatchAndRender type: 'NEW_ROUTE', params: document.location.search
+  window.onpopstate null # handle current GET params
 
   playingSource = null
   update_audio_from_state = ->
@@ -182,13 +178,6 @@ document.addEventListener 'DOMContentLoaded', (event) ->
       playingSource.start 0,
         Math.max(0, span[0] / 1000 - 0.1),
         (span[1] - span[0]) / 1000 + 0.1
-
-  #handleNewHash = ->
-  #  route = window.location.hash.replace(/^#\/?|\/$/g, '').split('/')
-  #  store.dispatch { type: 'NEW_ROUTE', new_route: route }
-  #  render()
-  #handleNewHash()
-  #window.addEventListener 'hashchange', handleNewHash, false
 
   #decrementTime = ->
   #  if store.getState().counter > 0
