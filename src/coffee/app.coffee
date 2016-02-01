@@ -12,7 +12,7 @@ VocabInContextComponent = require './VocabInContextComponent.coffee'
 
 backendRoot = switch window.location.hostname
   when 'localhost' then 'http://localhost:9292'
-  else 'http://digitalocean.vocabincontext.com'
+  else "#{window.location.protocol}//#{window.location.hostname}"
 
 reducer = (state, action) ->
   #console.log 'action', stringifyState(action)
