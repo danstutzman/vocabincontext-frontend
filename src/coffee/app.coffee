@@ -71,13 +71,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
   store = Redux.createStore reducer, { loading_state: 'LOADING' }
 
-  handleParams = (paramsString) ->
-    params = {}
-    for item in paramsString.substr(1).split('&')
-      if item != ''
-        s = item.split("=")
-        params[s[0]] = s[1] && decodeURIComponent(s[1])
-
+  handleParams = (params) ->
     req = { method: 'GET', url: "#{backendRoot}/api?q=#{params.q || ''}" }
     xhr = new XMLHttpRequest()
     xhr.open req.method, req.url, true
@@ -122,7 +116,13 @@ document.addEventListener 'DOMContentLoaded', (event) ->
         currentlyPlayingAudio.play()
 
     if action.type == 'NEW_ROUTE'
-      window.history.pushState { params: action.params }, null, "/#{action.params}"
+      paramsString = ''
+      keys = (key for key of action.params)
+      keys.sort()
+      for key in keys
+        paramsString += (if paramsString == '' then '?' else '&') +
+          "#{encodeURIComponent(key)}=#{encodeURIComponent(action.params[key])}"
+      window.history.pushState { params: action.params }, null, "/#{paramsString}"
       handleParams action.params
 
     store.dispatch action
