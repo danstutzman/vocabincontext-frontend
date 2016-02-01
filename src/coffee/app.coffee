@@ -132,7 +132,11 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     render dispatchAndRender
 
   window.onpopstate = (event) ->
-    dispatchAndRender type: 'NEW_ROUTE', params: document.location.search
+    params = {}
+    for pair in location.search.substr(1).split('&')
+      [key, value] = pair.split('=')
+      params[decodeURIComponent(key)] = decodeURIComponent(value)
+    dispatchAndRender type: 'NEW_ROUTE', params: params
   window.onpopstate null # handle current GET params
 
   playingSource = null
