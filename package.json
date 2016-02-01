@@ -11,9 +11,10 @@
     "watchify": "^3.6.0"
   },
   "dependencies": {
+    "bluebird": "^3.2.1",
     "react": "^0.14.2",
-    "react-dom": "^0.14.2",
     "react-addons-update": "^0.14.2",
+    "react-dom": "^0.14.2",
     "underscore": "^1.8.3"
   }
 }

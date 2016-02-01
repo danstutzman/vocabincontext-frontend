@@ -1,3 +1,4 @@
+{Promise}          = require 'bluebird'
 React              = require 'react'
 ReactDOM           = require 'react-dom'
 ReactAddonsUpdate  = require 'react-addons-update'
@@ -84,6 +85,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
   store = Redux.createStore reducer, { loading_state: 'LOADING' }
 
+  lineNumToBufferPromise = []
   handleParams = (params) ->
     req = { method: 'GET', url: "#{backendRoot}/api?q=#{params.q || ''}" }
     xhr = new XMLHttpRequest()
@@ -112,20 +114,24 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
       line = store.getState().data.lines[action.line_num]
       if action.play_state == 'LOADING'
-        path = backendRoot + '/excerpt.aac' +
-          '?video_id=' + line.video_id +
-          '&begin_millis=' + line.begin_millis +
-          '&end_millis=' + line.end_millis
-        xhr = new XMLHttpRequest()
-        xhr.open 'GET', path, true
-        xhr.responseType = 'arraybuffer'
-        xhr.onload = ->
-          success = (buffer) ->
-            dispatchAndRender
-              type: 'SET_AUDIO_PLAY_STATE'
-              play_state: 'PLAYING'
-              line_num: action.line_num
+        lineNumToBufferPromise[action.line_num] ?= new Promise (resolve, reject) ->
+          path = backendRoot + '/excerpt.aac' +
+            '?video_id=' + line.video_id +
+            '&begin_millis=' + line.begin_millis +
+            '&end_millis=' + line.end_millis
+          xhr = new XMLHttpRequest()
+          xhr.open 'GET', path, true
+          xhr.responseType = 'arraybuffer'
+          xhr.onload = -> resolve xhr.response
+          xhr.send()
 
+        lineNumToBufferPromise[action.line_num].then (xhr_response) ->
+          dispatchAndRender
+            type: 'SET_AUDIO_PLAY_STATE'
+            play_state: 'PLAYING'
+            line_num: action.line_num
+
+          success = (buffer) ->
             currentlyPlayingSource = window.myAudioContext.createBufferSource()
             currentlyPlayingSource.buffer = buffer
             currentlyPlayingSource.connect window.myAudioContext.destination
@@ -137,8 +143,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
             currentlyPlayingSource.start 0
           error = (e) ->
             throw new Error "Error decoding audio data: #{if e then e.err}"
-          window.myAudioContext.decodeAudioData xhr.response, success, error
-        xhr.send()
+          window.myAudioContext.decodeAudioData xhr_response, success, error
 
     if action.type == 'NEW_ROUTE'
       handleParams action.params
