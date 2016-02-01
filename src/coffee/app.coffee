@@ -11,6 +11,8 @@ MenuComponent      = require './MenuComponent.coffee'
 TopComponent       = require './TopComponent.coffee'
 VocabInContextComponent = require './VocabInContextComponent.coffee'
 
+FADE_DURATION = 1
+
 backendRoot = switch window.location.hostname
   when 'localhost' then 'http://localhost:9292'
   else "#{window.location.protocol}//#{window.location.hostname}"
@@ -117,8 +119,8 @@ document.addEventListener 'DOMContentLoaded', (event) ->
         lineNumToBufferPromise[action.line_num] ?= new Promise (resolve, reject) ->
           path = backendRoot + '/excerpt.aac' +
             '?video_id=' + line.video_id +
-            '&begin_millis=' + line.begin_millis +
-            '&end_millis=' + line.end_millis
+            '&begin_millis=' + (line.begin_millis - FADE_DURATION * 1000) +
+            '&end_millis=' + (line.end_millis + FADE_DURATION * 1000)
           xhr = new XMLHttpRequest()
           xhr.open 'GET', path, true
           xhr.responseType = 'arraybuffer'
@@ -132,9 +134,26 @@ document.addEventListener 'DOMContentLoaded', (event) ->
             line_num: action.line_num
 
           success = (buffer) ->
-            currentlyPlayingSource = window.myAudioContext.createBufferSource()
+            context = window.myAudioContext
+            currentlyPlayingSource = context.createBufferSource()
+            gain = context.createGain()
             currentlyPlayingSource.buffer = buffer
-            currentlyPlayingSource.connect window.myAudioContext.destination
+            currentlyPlayingSource.connect gain
+            gain.connect context.destination
+
+            # fade in
+            gain.gain.linearRampToValueAtTime 0.0,
+              context.currentTime
+            gain.gain.linearRampToValueAtTime 1.0,
+              context.currentTime + FADE_DURATION
+
+            # fade out
+            excerptDuration = (line.end_millis - line.begin_millis) / 1000
+            gain.gain.linearRampToValueAtTime 1.0,
+              context.currentTime + FADE_DURATION + excerptDuration
+            gain.gain.linearRampToValueAtTime 0.0,
+              context.currentTime + FADE_DURATION + excerptDuration + FADE_DURATION
+
             currentlyPlayingSource.onended = ->
               dispatchAndRender
                 type: 'SET_AUDIO_PLAY_STATE'
