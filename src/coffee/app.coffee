@@ -104,29 +104,41 @@ document.addEventListener 'DOMContentLoaded', (event) ->
           req.method} #{req.url}"
     xhr.send()
 
-  currentlyPlayingAudio = null
+  currentlyPlayingSource = null
   dispatchAndRender = (action) ->
     if action.type == 'SET_AUDIO_PLAY_STATE'
-      if currentlyPlayingAudio and action.play_state != 'PLAYING'
-        currentlyPlayingAudio.pause()
+      if currentlyPlayingSource and action.play_state != 'PLAYING'
+        currentlyPlayingSource.stop()
 
       line = store.getState().data.lines[action.line_num]
       if action.play_state == 'LOADING'
-        currentlyPlayingAudio = new Audio(backendRoot + '/excerpt.aac' +
+        path = backendRoot + '/excerpt.aac' +
           '?video_id=' + line.video_id +
           '&begin_millis=' + line.begin_millis +
-          '&end_millis=' + line.end_millis)
-        currentlyPlayingAudio.addEventListener 'playing', ->
-          dispatchAndRender
-            type: 'SET_AUDIO_PLAY_STATE'
-            play_state: 'PLAYING'
-            line_num: action.line_num
-        currentlyPlayingAudio.addEventListener 'ended', ->
-          dispatchAndRender
-            type: 'SET_AUDIO_PLAY_STATE'
-            play_state: 'STOPPED'
-            line_num: action.line_num
-        currentlyPlayingAudio.play()
+          '&end_millis=' + line.end_millis
+        xhr = new XMLHttpRequest()
+        xhr.open 'GET', path, true
+        xhr.responseType = 'arraybuffer'
+        xhr.onload = ->
+          success = (buffer) ->
+            dispatchAndRender
+              type: 'SET_AUDIO_PLAY_STATE'
+              play_state: 'PLAYING'
+              line_num: action.line_num
+
+            currentlyPlayingSource = window.myAudioContext.createBufferSource()
+            currentlyPlayingSource.buffer = buffer
+            currentlyPlayingSource.connect window.myAudioContext.destination
+            currentlyPlayingSource.onended = ->
+              dispatchAndRender
+                type: 'SET_AUDIO_PLAY_STATE'
+                play_state: 'STOPPED'
+                line_num: action.line_num
+            currentlyPlayingSource.start 0
+          error = (e) ->
+            throw new Error "Error decoding audio data: #{if e then e.err}"
+          window.myAudioContext.decodeAudioData xhr.response, success, error
+        xhr.send()
 
     if action.type == 'NEW_ROUTE'
       handleParams action.params
@@ -142,74 +154,9 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     dispatchAndRender type: 'NEW_ROUTE', params: params
   window.onpopstate null # handle current GET params
 
-  playingSource = null
-  update_audio_from_state = ->
-    # stop any currently playing audio
-    if playingSource != null
-      playingSource.onended = null
-      playingSource.stop()
-      playingSource = null
-
-    state = store.getState()
-
-    # if we should be playing something, start it playing
-    if state.dialog.depressed_button in ['PLAY_ONE', 'PLAY_ALL']
-      # select the first utterance if not is selected
-      if state.selected_utterance_num is null
-        store.dispatch
-          type: 'DIALOG/SELECT_UTTERANCE'
-          utterance_num: 0
-        render()
-
-      # start the audio playing
-      playingSource = window.myAudioContext.createBufferSource()
-      playingSource.buffer = window.myBuffer
-      playingSource.connect window.myAudioContext.destination
-      playingSource.onended = ->
-        if state.dialog.depressed_button is 'PLAY_ALL'
-          if state.selected_utterance_num < dialog.length - 1
-            store.dispatch
-              type: 'DIALOG/SELECT_UTTERANCE'
-              utterance_num: state.selected_utterance_num + 1
-            update_audio_from_state()
-          else
-            store.dispatch
-              type: 'DIALOG/SELECT_UTTERANCE'
-              utterance_num: null
-            store.dispatch
-              type: 'DIALOG/SET_DEPRESSED_BUTTON'
-              new_depressed_button: null
-        else if state.dialog.depressed_button is 'PLAY_ONE'
-          store.dispatch
-            type: 'DIALOG/SET_DEPRESSED_BUTTON'
-            new_depressed_button: null
-        render()
-      span = dialog[state.selected_utterance_num || 0].m4a_milliseconds
-      playingSource.start 0,
-        Math.max(0, span[0] / 1000 - 0.1),
-        (span[1] - span[0]) / 1000 + 0.1
-
-  #decrementTime = ->
-  #  if store.getState().counter > 0
-  #    store.dispatch { type: 'FIVE_SECONDS_PASSED' }
-  #    render()
-  #    window.setTimeout decrementTime, 5000
-  #window.setTimeout decrementTime, 5000
-
   if 'AudioContext' of window
     window.myAudioContext = new AudioContext()
   else if 'webkitAudioContext' of window
     window.myAudioContext = new webkitAudioContext()
   else
     alert 'Your browser does not support yet Web Audio API'
-
-  #request = new XMLHttpRequest()
-  #request.open 'GET', 'mp3/dialog1.m4a', true
-  #request.responseType = 'arraybuffer'
-  #request.onload = ->
-  #  success = (buffer) ->
-  #    window.myBuffer = buffer
-  #  error = (e) ->
-  #    throw new Error "Error decoding audio data: #{if e then e.err}"
-  #  window.myAudioContext.decodeAudioData request.response, success, error
-  #request.send()
