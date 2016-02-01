@@ -9,9 +9,6 @@ VocabInContextComponent = React.createClass
     { div, li } = React.DOM
     { state, dispatch } = @props
 
-    if state.error
-      return div {}, state.error
-
     div {},
       _.map state.data.lines, (line, lineNum) ->
         do (lineNum) ->

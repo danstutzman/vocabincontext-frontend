@@ -20,21 +20,7 @@ reducer = (state, action) ->
   switch action.type
     when '@@redux/INIT' then state
     when 'NEW_ROUTE'
-      route = action.new_route
-      updates = switch route[0]
-        when ''          then { current_screen: 'MenuComponent' }
-        when 'dialog'
-          current_screen: 'DialogComponent'
-          dialog:
-            depressed_button: null
-          selected_utterance_num: null
-        when 'flashcard'
-          current_screen: 'FlashcardComponent'
-          response_type: 'SAY'
-          counter: 10
-        else
-          throw new Error("Unknown route '#{action.new_route.join('/')}'")
-      _.defaults updates, state
+      update loading_state: { $set: 'LOADING' }, data: $set: null
     when 'DIALOG/SET_DEPRESSED_BUTTON'
       _.defaults { dialog: { depressed_button: action.new_depressed_button } }, state
     when 'FLIP_CARD'
@@ -48,9 +34,9 @@ reducer = (state, action) ->
     when 'DIALOG/SELECT_UTTERANCE'
       _.defaults { selected_utterance_num: action.utterance_num }, state
     when 'GOT_ERROR'
-      update error: $set: action.error
+      update loading_state: { $set: 'ERROR' }, data: $set: action.error
     when 'GOT_DATA'
-      update data: $set: action.data
+      update loading_state: { $set: 'LOADED' }, data: $set: action.data
     when 'SET_AUDIO_PLAY_STATE'
       update data: lines: "#{action.line_num}": play_state: $set: action.play_state
     when 'SET_EXPANDED'
@@ -77,47 +63,78 @@ stringifyState = (object) ->
     "#{object}"
 
 document.addEventListener 'DOMContentLoaded', (event) ->
-  store = Redux.createStore reducer, { }
+  render = (dispatchAndRender) ->
+    app = React.createElement TopComponent,
+      state: store.getState()
+      dispatch: dispatchAndRender
+    ReactDOM.render app, document.getElementById('root')
+
+  store = Redux.createStore reducer, { loading_state: 'LOADING' }
+
+  handlePathname = (pathname) ->
+    if pathname == '' or pathname == '/'
+      parts = ['search', '']
+    else
+      parts = pathname.split('/')
+      parts.shift() # so /a/b becomes ['a','b'] not ['','a','b']
+
+    if parts[0] == 'search'
+      query = parts[1]
+      req = { method: 'GET', url: "#{backendRoot}/api?q=#{query}" }
+      xhr = new XMLHttpRequest()
+      xhr.open req.method, req.url, true
+      xhr.onload = ->
+        switch xhr.status
+          when 200
+            dispatchAndRender type: 'GOT_DATA', data: JSON.parse(xhr.responseText)
+          else
+            dispatchAndRender
+              type: 'GOT_ERROR'
+              error: "Error #{xhr.status} #{xhr.statusText} from #{
+                req.method} #{req.url}"
+      xhr.onerror = ->
+        dispatchAndRender
+          type: 'GOT_ERROR'
+          error: "Error #{xhr.status} #{xhr.statusText} from #{
+            req.method} #{req.url}"
+      xhr.send()
+    else
+      throw new Error("Don't understand pathname #{pathname}")
 
   currentlyPlayingAudio = null
-  render = ->
-    dispatch = (action) ->
-      store.dispatch action
-      render()
+  dispatchAndRender = (action) ->
+    if action.type == 'SET_AUDIO_PLAY_STATE'
+      if currentlyPlayingAudio
+        currentlyPlayingAudio.pause()
 
-    dispatchAffectingAudio = (action) ->
-      if action.type == 'SET_AUDIO_PLAY_STATE'
-        if currentlyPlayingAudio
-          currentlyPlayingAudio.pause()
+      line = store.getState().data.lines[action.line_num]
+      if action.play_state == 'LOADING'
+        currentlyPlayingAudio = new Audio(backendRoot + '/excerpt.aac' +
+          '?video_id=' + line.video_id +
+          '&begin_millis=' + line.begin_millis +
+          '&end_millis=' + line.end_millis)
+        currentlyPlayingAudio.addEventListener 'playing', ->
+          dispatchAndRender
+            type: 'SET_AUDIO_PLAY_STATE'
+            play_state: 'PLAYING'
+            line_num: action.line_num
+        currentlyPlayingAudio.addEventListener 'ended', ->
+          dispatchAndRender
+            type: 'SET_AUDIO_PLAY_STATE'
+            play_state: 'STOPPED'
+            line_num: action.line_num
+        currentlyPlayingAudio.play()
 
-        line = store.getState().data.lines[action.line_num]
-        if action.play_state == 'LOADING'
-          currentlyPlayingAudio = new Audio(backendRoot + '/excerpt.aac' +
-            '?video_id=' + line.video_id +
-            '&begin_millis=' + line.begin_millis +
-            '&end_millis=' + line.end_millis)
-          currentlyPlayingAudio.addEventListener 'playing', ->
-            dispatch
-              type: 'SET_AUDIO_PLAY_STATE'
-              play_state: 'PLAYING'
-              line_num: action.line_num
-          currentlyPlayingAudio.addEventListener 'ended', ->
-            dispatch
-              type: 'SET_AUDIO_PLAY_STATE'
-              play_state: 'STOPPED'
-              line_num: action.line_num
-          currentlyPlayingAudio.play()
-      dispatch action
+    if action.type == 'NEW_ROUTE'
+      window.history.pushState { pathname: action.pathname }, null, action.pathname
+      handlePathname action.pathname
 
-    #console.log stringifyState(store.getState())
-    #app = React.createElement TopComponent,
-    #  state: store.getState()
-    #  dispatch: dispatch
-    #  update_audio_from_state: update_audio_from_state
-    app = React.createElement VocabInContextComponent,
-      state: store.getState()
-      dispatch: dispatchAffectingAudio
-    ReactDOM.render app, document.getElementById('root')
+    store.dispatch action
+    render dispatchAndRender
+
+  window.onpopstate = (event) ->
+    dispatchAndRender type: 'NEW_ROUTE', pathname: document.location.pathname
+  window.onpopstate null # handle current pathname
 
   playingSource = null
   update_audio_from_state = ->
@@ -173,12 +190,12 @@ document.addEventListener 'DOMContentLoaded', (event) ->
   #handleNewHash()
   #window.addEventListener 'hashchange', handleNewHash, false
 
-  decrementTime = ->
-    if store.getState().counter > 0
-      store.dispatch { type: 'FIVE_SECONDS_PASSED' }
-      render()
-      window.setTimeout decrementTime, 5000
-  window.setTimeout decrementTime, 5000
+  #decrementTime = ->
+  #  if store.getState().counter > 0
+  #    store.dispatch { type: 'FIVE_SECONDS_PASSED' }
+  #    render()
+  #    window.setTimeout decrementTime, 5000
+  #window.setTimeout decrementTime, 5000
 
   if 'AudioContext' of window
     window.myAudioContext = new AudioContext()
@@ -186,26 +203,6 @@ document.addEventListener 'DOMContentLoaded', (event) ->
     window.myAudioContext = new webkitAudioContext()
   else
     alert 'Your browser does not support yet Web Audio API'
-
-  req = { method: 'GET', url: "#{backendRoot}/api?q=" }
-  xhr = new XMLHttpRequest()
-  xhr.open req.method, req.url, true
-  xhr.onload = ->
-    switch xhr.status
-      when 200
-        store.dispatch type: 'GOT_DATA', data: JSON.parse(xhr.responseText)
-        render()
-      else
-        store.dispatch
-          type: 'GOT_ERROR'
-          error: "Error #{xhr.status} #{xhr.statusText} from #{req.method} #{req.url}"
-        render()
-  xhr.onerror = ->
-    store.dispatch
-      type: 'GOT_ERROR'
-      error: "Error #{xhr.status} #{xhr.statusText} from #{req.method} #{req.url}"
-    render()
-  xhr.send()
 
   #request = new XMLHttpRequest()
   #request.open 'GET', 'mp3/dialog1.m4a', true

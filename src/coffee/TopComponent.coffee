@@ -1,27 +1,47 @@
 React              = require 'react'
-DialogComponent    = require './DialogComponent.coffee'
-MenuComponent      = require './MenuComponent.coffee'
-FlashcardComponent = require './FlashcardComponent.coffee'
+VocabInContextComponent = require './VocabInContextComponent.coffee'
+
+ENTER_KEY_CODE = 13
 
 TopComponent = React.createClass
   displayName: 'TopComponent'
   render: ->
-    switch @props.state.current_screen
-      when 'DialogComponent'
-        React.createElement DialogComponent,
-          depressed_button: @props.state.dialog.depressed_button
-          selected_utterance_num: @props.state.selected_utterance_num
-          dispatch: @props.dispatch
-          update_audio_from_state: @props.update_audio_from_state
-      when 'FlashcardComponent'
-        React.createElement FlashcardComponent,
-          responseType: @props.state.response_type
-          time: @props.state.counter
-          dispatch: @props.dispatch
-      when 'MenuComponent'
-        React.createElement MenuComponent,
-          dispatch: @props.dispatch
-      else
-        throw new Error("Unknown current_screen '#{@props.state.current_screen}'")
+    { button, div, img, input } = React.DOM
+    { state, dispatch } = @props
+
+    switch state.loading_state
+      when 'LOADING'
+        div {}, 'Loading...'
+        div
+          style:
+            textAlign: 'center'
+            margin: '50px'
+            fontFamily: 'sans-serif'
+            fontSize: '30pt'
+          'Loading'
+          img
+            style: display: 'inline'
+            src: 'data:image/gif;base64,R0lGODlhKwALAPEAAP///wAAAIKCggAAACH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAKwALAAACMoSOCMuW2diD88UKG95W88uF4DaGWFmhZid93pq+pwxnLUnXh8ou+sSz+T64oCAyTBUAACH5BAAKAAEALAAAAAArAAsAAAI9xI4IyyAPYWOxmoTHrHzzmGHe94xkmJifyqFKQ0pwLLgHa82xrekkDrIBZRQab1jyfY7KTtPimixiUsevAAAh+QQACgACACwAAAAAKwALAAACPYSOCMswD2FjqZpqW9xv4g8KE7d54XmMpNSgqLoOpgvC60xjNonnyc7p+VKamKw1zDCMR8rp8pksYlKorgAAIfkEAAoAAwAsAAAAACsACwAAAkCEjgjLltnYmJS6Bxt+sfq5ZUyoNJ9HHlEqdCfFrqn7DrE2m7Wdj/2y45FkQ13t5itKdshFExC8YCLOEBX6AhQAADsAAAAAAAAAAAA='
+      when 'ERROR'
+        div {}, state.error
+      when 'LOADED'
+        div {},
+          input
+            id: 'query'
+            ref: 'query'
+            name: 'query'
+            placeholder: 'Filter by word'
+            onKeyDown: (e) =>
+              if e.keyCode == ENTER_KEY_CODE
+                pathname = if @refs.query.value
+                  "/search/#{encodeURIComponent(@refs.query.value)}"
+                else
+                  ''
+                dispatch type: 'NEW_ROUTE', pathname: pathname
+          button
+            className: 'search'
+          React.createElement VocabInContextComponent,
+            state: @props.state,
+            dispatch: @props.dispatch
 
 module.exports = TopComponent

@@ -256,3 +256,18 @@ body {
   from {transform: rotate(0deg);}
   to {transform: rotate(359deg);}
 }
+
+input#query {
+  font-size: 20pt;
+  width: 265px;
+  height: 50px;
+  border: 1px #777 solid;
+}
+
+button.search {
+  width: 50px;
+  height: 50px;
+  background: #777 url('../images/magnifying_glass.png') no-repeat 8px 8px;
+  background-size: 30px 30px;
+  vertical-align: bottom;
+}
