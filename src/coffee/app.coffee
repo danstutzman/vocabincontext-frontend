@@ -114,6 +114,20 @@ document.addEventListener 'DOMContentLoaded', (event) ->
   currentlyPlayingSource = null
   dispatchAndRender = (action) ->
     if action.type == 'SET_AUDIO_PLAY_STATE'
+      # see http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api#32840804
+      if window.myAudioContext == undefined
+        if 'AudioContext' of window
+          window.myAudioContext = new AudioContext()
+        else if 'webkitAudioContext' of window
+          window.myAudioContext = new webkitAudioContext()
+        else
+          alert 'Your browser does not support yet Web Audio API'
+        oscillator = window.myAudioContext.createOscillator()
+        oscillator.frequency.value = 400
+        oscillator.connect window.myAudioContext.destination
+        oscillator.start 0
+        oscillator.stop 0
+
       if currentlyPlayingSource and action.play_state != 'PLAYING'
         currentlyPlayingSource.stop()
 
@@ -180,10 +194,3 @@ document.addEventListener 'DOMContentLoaded', (event) ->
       params[decodeURIComponent(key)] = decodeURIComponent(value)
     dispatchAndRender type: 'NEW_ROUTE', params: params
   window.onpopstate null # handle current GET params
-
-  if 'AudioContext' of window
-    window.myAudioContext = new AudioContext()
-  else if 'webkitAudioContext' of window
-    window.myAudioContext = new webkitAudioContext()
-  else
-    alert 'Your browser does not support yet Web Audio API'
