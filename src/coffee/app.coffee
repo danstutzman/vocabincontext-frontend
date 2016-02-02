@@ -13,9 +13,12 @@ VocabInContextComponent = require './VocabInContextComponent.coffee'
 
 FADE_DURATION = 1
 
-backendRoot = switch window.location.hostname
-  when 'localhost' then 'http://localhost:9292'
-  else "#{window.location.protocol}//#{window.location.hostname}"
+{ protocol, hostname } = window.location
+backendRoot = if hostname == 'localhost' or hostname.indexOf('10.') == 0
+    "http://#{hostname}:9292"
+  else if hostname.indexOf('ngrok.com') + 'ngrok.com'.length == hostname.length
+    "http://10.0.0.62:9292"
+  else "#{protocol}//#{hostname}"
 
 reducer = (state, action) ->
   #console.log 'action', stringifyState(action)
