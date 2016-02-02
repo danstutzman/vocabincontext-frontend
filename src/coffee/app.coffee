@@ -172,6 +172,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
               context.currentTime + FADE_DURATION + excerptDuration + FADE_DURATION
 
             currentlyPlayingSource.onended = ->
+              currentlyPlayingSource = null
               dispatchAndRender
                 type: 'SET_AUDIO_PLAY_STATE'
                 play_state: 'STOPPED'
