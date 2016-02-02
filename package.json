@@ -15,6 +15,7 @@
     "react": "^0.14.2",
     "react-addons-update": "^0.14.2",
     "react-dom": "^0.14.2",
+    "redux": "^3.2.1",
     "underscore": "^1.8.3"
   }
 }
