@@ -37,6 +37,8 @@ TopComponent = React.createClass
                 goToRoute q: @refs.query.value
           button
             className: 'search'
+            onClick: (e) =>
+              goToRoute q: @refs.query.value
           React.createElement VocabInContextComponent,
             state: state,
             dispatch: dispatch
