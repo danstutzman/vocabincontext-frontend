@@ -16,6 +16,17 @@
     </div>
 
     <script src='js/vendor.js'></script>
+    <script>
+      function require(name) {
+        if (name === 'react') { return window.React; }
+        else if (name === 'react-dom') { return window.ReactDOM; }
+        else if (name === 'react-addons-update') { return window.React.addons.update; }
+        else if (name === 'underscore') { return window._; }
+        else if (name === 'bluebird') { return { Promise: window.Promise }; }
+        else if (name === 'redux') { return window.Redux; }
+        else { throw new Error("Unknown library '" + name + "'"); }
+      }
+    </script>
     <script src='js/app.js'></script>
   </body>
 </html>

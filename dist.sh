@@ -14,18 +14,7 @@ mkdir -p dist dist/js dist/css
 cat node_modules/react/dist/react.min.js > dist/js/vendor.js
 cat node_modules/react-dom/dist/react-dom.min.js >> dist/js/vendor.js
 cat node_modules/underscore/underscore-min.js >> dist/js/vendor.js
-echo >> dist/js/vendor.js # needs a newline
-cat >>dist/js/vendor.js <<EOF
-  function require(name) {
-    if (name === 'react') { return window.React; }
-    else if (name === 'react-dom') { return window.ReactDOM; }
-    else if (name === 'underscore') { return window._; }
-    else { throw new Error("Unknown library '" + name + "'"); }
-  }
-EOF
-#NODE_ENV=production $BROWSERIFY -r underscore -v \
-#  | node_modules/uglify-js/bin/uglifyjs --compress --mangle \
-#  >> dist/js/vendor.js
+echo >> dist/js/vendor.js # needs a newline if anything follows
 
 $BROWSERIFY -t coffeeify src/coffee/app.coffee -v \
   -x react -x react-dom -x underscore \

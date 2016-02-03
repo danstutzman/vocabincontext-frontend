@@ -6,19 +6,19 @@ WATCHIFY=node_modules/watchify/bin/cmd.js
 
 mkdir -p build build/js build/css
 
-ln -sf ../src/index.html build/index.html
-
-cp node_modules/react/dist/react.js build/js/vendor.js
-cat node_modules/react-dom/dist/react-dom.js >> build/js/vendor.js
-cat >>build/js/vendor.js <<EOF
-  function require(name) {
-    if (name === 'react') { return window.React; }
-    else if (name === 'react-dom') { return window.ReactDOM; }
-    else { throw new Error("Unknown library '" + name + "'"); }
-  }
-EOF
-$BROWSERIFY -r underscore -d -v >> build/js/vendor.js
+ruby -e "
+index = File.read('src/index.html')
+index.gsub! '<script src=\'js/vendor.js\'></script>', %q{
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-with-addons.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.2.1/bluebird.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/redux/3.2.1/redux.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js'></script>}
+File.open('build/index.html', 'w') do |file|
+  file.write index
+end
+"
 
 $WATCHIFY -t coffeeify src/coffee/app.coffee -d \
-  -x react -x react-dom -x underscore \
+  -x react -x react-dom -x underscore -x bluebird -x react-addons-update -x redux \
   -v -o build/js/app.js
