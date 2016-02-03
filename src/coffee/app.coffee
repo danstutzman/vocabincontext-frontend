@@ -14,10 +14,15 @@ VocabInContextComponent = require './VocabInContextComponent.coffee'
 FADE_DURATION = 1
 
 { protocol, hostname } = window.location
-backendRoot = if hostname == 'localhost' or hostname.indexOf('10.') == 0
+rubyBackendRoot = if hostname == 'localhost' or hostname.indexOf('10.') == 0
     "http://#{hostname}:9292"
   else if hostname.indexOf('ngrok.com') + 'ngrok.com'.length == hostname.length
     "http://10.0.0.62:9292"
+  else "#{protocol}//#{hostname}"
+goBackendRoot = if hostname == 'localhost' or hostname.indexOf('10.') == 0
+    "http://#{hostname}:8080"
+  else if hostname.indexOf('ngrok.com') + 'ngrok.com'.length == hostname.length
+    "http://10.0.0.62:8080"
   else "#{protocol}//#{hostname}"
 
 reducer = (state, action) ->
@@ -92,7 +97,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
   lineNumToBufferPromise = []
   handleParams = (params) ->
-    req = { method: 'GET', url: "#{backendRoot}/api?q=#{params.q || ''}" }
+    req = { method: 'GET', url: "#{goBackendRoot}/api?q=#{params.q || ''}" }
     xhr = new XMLHttpRequest()
     xhr.open req.method, req.url, true
     xhr.onload = ->
@@ -134,7 +139,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
       line = store.getState().data.lines[action.line_num]
       if action.play_state == 'LOADING'
         lineNumToBufferPromise[action.line_num] ?= new Promise (resolve, reject) ->
-          path = backendRoot + '/excerpt.aac' +
+          path = rubyBackendRoot + '/excerpt.aac' +
             '?video_id=' + line.video_id +
             '&begin_millis=' + (line.begin_millis - FADE_DURATION * 1000) +
             '&end_millis=' + (line.end_millis + FADE_DURATION * 1000)
