@@ -95,7 +95,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
   store = Redux.createStore reducer, { loading_state: 'LOADING' }
 
-  lineNumToBufferPromise = []
+  audioUrlToBufferPromise = []
   handleParams = (params) ->
     req = { method: 'GET', url: "#{goBackendRoot}/api?q=#{params.q || ''}" }
     xhr = new XMLHttpRequest()
@@ -138,18 +138,19 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
       line = store.getState().data.lines[action.line_num]
       if action.play_state == 'LOADING'
-        lineNumToBufferPromise[action.line_num] ?= new Promise (resolve, reject) ->
-          path = rubyBackendRoot + '/excerpt.aac' +
-            '?video_id=' + line.video_id +
-            '&begin_millis=' + (line.begin_millis - FADE_DURATION * 1000) +
-            '&end_millis=' + (line.end_millis + FADE_DURATION * 1000)
+        audioUrl = rubyBackendRoot + '/excerpt.aac' +
+          '?video_id=' + line.video_id +
+          '&begin_millis=' + (line.begin_millis - FADE_DURATION * 1000) +
+          '&end_millis=' + (line.end_millis + FADE_DURATION * 1000)
+
+        audioUrlToBufferPromise[audioUrl] ?= new Promise (resolve, reject) ->
           xhr = new XMLHttpRequest()
-          xhr.open 'GET', path, true
+          xhr.open 'GET', audioUrl, true
           xhr.responseType = 'arraybuffer'
           xhr.onload = -> resolve xhr.response
           xhr.send()
 
-        lineNumToBufferPromise[action.line_num].then (xhr_response) ->
+        audioUrlToBufferPromise[audioUrl].then (xhr_response) ->
           dispatchAndRender
             type: 'SET_AUDIO_PLAY_STATE'
             play_state: 'PLAYING'
