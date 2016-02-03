@@ -14,16 +14,11 @@ VocabInContextComponent = require './VocabInContextComponent.coffee'
 FADE_DURATION = 1
 
 { protocol, hostname } = window.location
-rubyBackendRoot = if hostname == 'localhost' or hostname.indexOf('10.') == 0
-    "http://#{hostname}:9292"
+apiBackendRoot = if hostname == 'localhost' or hostname.indexOf('10.') == 0
+    "http://#{hostname}:8080/api"
   else if hostname.indexOf('ngrok.com') + 'ngrok.com'.length == hostname.length
-    "http://10.0.0.62:9292"
-  else "#{protocol}//#{hostname}"
-goBackendRoot = if hostname == 'localhost' or hostname.indexOf('10.') == 0
-    "http://#{hostname}:8080"
-  else if hostname.indexOf('ngrok.com') + 'ngrok.com'.length == hostname.length
-    "http://10.0.0.62:8080"
-  else "#{protocol}//#{hostname}"
+    "http://10.0.0.62:8080/api"
+  else "#{protocol}//#{hostname}/api"
 
 reducer = (state, action) ->
   #console.log 'action', stringifyState(action)
@@ -97,7 +92,9 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
   audioUrlToBufferPromise = []
   handleParams = (params) ->
-    req = { method: 'GET', url: "#{goBackendRoot}/api?q=#{params.q || ''}" }
+    req =
+      method: 'GET'
+      url: "#{apiBackendRoot}/excerpt_list.json?q=#{params.q || ''}"
     xhr = new XMLHttpRequest()
     xhr.open req.method, req.url, true
     xhr.onload = ->
@@ -138,7 +135,7 @@ document.addEventListener 'DOMContentLoaded', (event) ->
 
       line = store.getState().data.lines[action.line_num]
       if action.play_state == 'LOADING'
-        audioUrl = rubyBackendRoot + '/excerpt.aac' +
+        audioUrl = apiBackendRoot + '/excerpt.aac' +
           '?video_id=' + line.video_id +
           '&begin_millis=' + (line.begin_millis - FADE_DURATION * 1000) +
           '&end_millis=' + (line.end_millis + FADE_DURATION * 1000)
