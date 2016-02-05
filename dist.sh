@@ -11,7 +11,26 @@ mkdir -p dist dist/js dist/css
 #cp build/css/sprity.css dist/css/sprity.css
 #cp -R build/images dist/images
 
-cat node_modules/react/dist/react.min.js > dist/js/vendor.js
+if [ ! -e build/piwik.js ]; then
+  curl https://raw.githubusercontent.com/piwik/piwik/b88b165f066fe462f06b4960202a4c126d149dae/piwik.js > build/piwik.js
+fi
+
+echo "var _paq = _paq || []; _paq.push(['setDomains', ['digitalocean.vocabincontext.com', 'vocabincontext.com']]); _paq.push(['trackPageView']); _paq.push(['enableLinkTracking']); var u='//192.81.213.170/piwik/'; _paq.push(['setTrackerUrl', u+'piwik.php']); _paq.push(['setSiteId', 1]);" > dist/js/vendor.js
+cat build/piwik.js >> dist/js/vendor.js
+tee -a dist/js/vendor.js <<EOF
+window.onerror = function () {
+  var errors = Array.prototype.slice.apply(arguments);
+  var error_message = errors[0];
+  var error_url = errors[1];
+  var error_line = errors[2];
+  var error_column = errors[3] + 1;
+  var line_string = isNaN(error_line) ? "" : " (line: " + error_line + "";
+  var column_string = isNaN(error_column) ? "" : ", column: " + error_column + ")";
+  var error_event = "[" + error_message + "][" + error_url + line_string + column_string + "]";
+  _paq.push(['trackEvent', 'Exceptions', 'JS errors', error_event]);
+}
+EOF
+cat node_modules/react/dist/react.min.js >> dist/js/vendor.js
 cat node_modules/react-dom/dist/react-dom.min.js >> dist/js/vendor.js
 cat node_modules/underscore/underscore-min.js >> dist/js/vendor.js
 echo >> dist/js/vendor.js # needs a newline if anything follows
